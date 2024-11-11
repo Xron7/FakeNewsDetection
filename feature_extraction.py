@@ -15,6 +15,7 @@ RT_UNDER_COLUMNS = []
 for t in THRESHOLDS[1:]:
   RT_UNDER_COLUMNS.append(f'rts_under_{t}_min')
 
+########################################################################################################################
 # Propagation dataset functions
 def construct_prop_df(tweet_id):
   propagation_path = PROP_PATH + f'{tweet_id}' + '.txt'
@@ -61,6 +62,7 @@ def count_rt_circles(df):
   return df[df['time_rt'] == 0.0].shape[0]
 
 
+########################################################################################################################
 # Graph Functions
 def construct_graph(df):
   G = nx.DiGraph()
@@ -80,6 +82,7 @@ def get_depth_stats(G, root):
     return max(lengths), np.mean(lengths)
 
 
+########################################################################################################################
 # Application
 def prop_data_pipeline(tweet_id):
 
@@ -134,7 +137,8 @@ def feature_extraction_pipeline(df):
   return df
 
 
-# tweet analysis
+########################################################################################################################
+# Tweet functions
 def tweet_pipeline(tweet):
     words = tweet.split()
 
@@ -149,18 +153,20 @@ def tweet_pipeline(tweet):
                    char in string.punctuation) - num_hashtags - num_mentions  # to not count metions and hashtags
 
     features = {
-        'length': length,
-        'num_words': num_words,
-        'num_urls': num_urls,
+        'length':       length,
+        'num_words':    num_words,
+        'num_urls':     num_urls,
         'num_mentions': num_mentions,
         'num_hashtags': num_hashtags,
-        'num_emoji': num_emoji,
+        'num_emoji':    num_emoji,
         'num_all_caps': num_all_caps,
-        'num_punc': num_punc
+        'num_punc':     num_punc
     }
 
     return features
 
+
+########################################################################################################################
 
 tweets_df = pd.read_csv(PATH + 'source_tweets.txt', sep = '\t', header = None, names = ['tweet_id', 'tweet'])
 labels_df = pd.read_csv(PATH + 'label.txt', sep = ':', header = None, names = ['label', 'tweet_id'])
