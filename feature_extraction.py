@@ -5,7 +5,9 @@ import re
 import emoji
 import string
 
-from tqdm import tqdm
+from tqdm  import tqdm
+from utils import construct_prop_df
+from utils import construct_graph
 
 PATH      = 'twitter15/'
 PROP_PATH = PATH + 'tree/'
@@ -17,34 +19,6 @@ for t in THRESHOLDS[1:]:
 
 ########################################################################################################################
 # Propagation dataset functions
-def construct_prop_df(tweet_id):
-  propagation_path = PROP_PATH + f'{tweet_id}' + '.txt'
-
-  sources    = []
-  retweeters = []
-  times      = []
-  rt_times   = []
-  with open(propagation_path, 'r') as file:
-    for i, line in enumerate(file):
-
-      source, retweet = line.split('->')
-      source  = eval(source)
-      retweet = eval(retweet)
-
-      sources.append(source[0])
-      retweeters.append(retweet[0])
-      rt_times.append(max(0, float(retweet[2]) - float(source[2]))) # max for handling retweet circles
-      times.append(float(retweet[2]))
-
-    propagation_df = pd.DataFrame({
-    'source': sources,
-    'retweeter_id': retweeters,
-    'time_elapsed': times,
-    'time_rt': rt_times
-})
-    return propagation_df
-
-
 def get_fast_tweets(df):
 
   categories = pd.cut(df['time_elapsed'], bins=THRESHOLDS, right=False)
@@ -64,19 +38,6 @@ def count_rt_circles(df):
 
 ########################################################################################################################
 # Graph Functions
-def construct_graph(df):
-  G = nx.DiGraph()
-
-  sources    = df['source'].tolist()
-  retweeters = df['retweeter_id'].tolist()
-  times      = df['time_elapsed'].tolist()
-
-  edges = zip(sources, retweeters, times)
-  G.add_edges_from((source, retweeter, {'time': time}) for source, retweeter, time in edges)
-
-  return G
-
-
 def get_depth_stats(G, root):
     lengths = list(nx.single_source_shortest_path_length(G, root).values())
     return max(lengths), np.mean(lengths)
@@ -86,7 +47,7 @@ def get_depth_stats(G, root):
 # Application
 def prop_data_pipeline(tweet_id):
 
-  prop_df = construct_prop_df(tweet_id)
+  prop_df = construct_prop_df(tweet_id, PROP_PATH)
 
   uid = prop_df['retweeter_id'][0]
 
@@ -178,3 +139,8 @@ df        = pd.merge(tweets_df, labels_df, on="tweet_id", how="left")
 df = feature_extraction_pipeline(df)
 
 df.to_csv(PATH + 'dataset_enhanced.csv', index=False)
+
+# TO DO
+# hashtag similiarity?
+# user based dataset?
+# sentiment analysis?
