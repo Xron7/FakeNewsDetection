@@ -142,15 +142,14 @@ def feature_extraction_pipeline(df):
 def tweet_pipeline(tweet):
     words = tweet.split()
 
-    length = len(tweet)
-    num_words = len(words)
-    num_urls = tweet.count('URL')
+    length       = len(tweet)
+    num_words    = len(words)
+    num_urls     = tweet.count('URL')
     num_mentions = len(re.findall(r'@\w+', tweet))
     num_hashtags = len(re.findall(r'#\w+', tweet))
     num_all_caps = len([word for word in words if word.isupper()]) - num_urls  # to not count URL
-    num_emoji = len([char for char in tweet if char in emoji.EMOJI_DATA])
-    num_punc = sum(1 for char in tweet if
-                   char in string.punctuation) - num_hashtags - num_mentions  # to not count metions and hashtags
+    num_emoji    = len([char for char in tweet if char in emoji.EMOJI_DATA])
+    num_punc     = sum(1 for char in tweet if char in string.punctuation) - num_hashtags - num_mentions  # to not count metions and hashtags
 
     features = {
         'length':       length,
