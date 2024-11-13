@@ -1,12 +1,13 @@
-import pandas            as pd
-import networkx          as nx
-import numpy             as np
+import pandas   as pd
+import networkx as nx
+import numpy    as np
 import re
 import emoji
 import string
 
 from tqdm  import tqdm
 
+# my files
 from utils  import construct_prop_df, construct_graph
 from config import PATH, THRESHOLDS, RT_UNDER_COLUMNS
 
