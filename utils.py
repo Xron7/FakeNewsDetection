@@ -41,3 +41,20 @@ def construct_graph(df):
   G.add_edges_from((source, retweeter, {'time': time}) for source, retweeter, time in edges)
 
   return G
+
+
+def combine_datasets():
+  t15 = 'datasets/twitter15/'
+  t16 = 'datasets/twitter16/'
+
+  df15 = pd.read_csv(t15 + 'source_tweets.txt', sep = '\t', header = None, names = ['tweet_id', 'tweet'])
+  df16 = pd.read_csv(t16 + 'source_tweets.txt', sep='\t', header=None, names=['tweet_id', 'tweet'])
+  df   = pd.concat([df15, df16]).drop_duplicates().reset_index(drop=True)
+  df.to_csv(PATH + 'source_tweets.txt', sep='\t', index=False, header=False)
+
+  l15 = pd.read_csv(t15 + 'label.txt', sep = ':', header = None, names = ['label', 'tweet_id'])
+  l16 = pd.read_csv(t16 + 'label.txt', sep = ':', header = None, names = ['label', 'tweet_id'])
+  l = pd.concat([l15, l16]).drop_duplicates().reset_index(drop=True)
+  l.to_csv(PATH + 'label.txt', sep=':', index=False, header=False)
+
+combine_datasets()

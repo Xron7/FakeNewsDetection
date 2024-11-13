@@ -1,4 +1,4 @@
-PATH       = 'twitter15/'
+PATH       = 'datasets/twitter1516/'
 THRESHOLDS = [0, 5, 30, 60, 180, 480, 720, 1440]
 
 RT_UNDER_COLUMNS = []
