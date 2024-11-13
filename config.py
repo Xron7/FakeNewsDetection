@@ -1,0 +1,6 @@
+PATH       = 'twitter15/'
+THRESHOLDS = [0, 5, 30, 60, 180, 480, 720, 1440]
+
+RT_UNDER_COLUMNS = []
+for t in THRESHOLDS[1:]:
+  RT_UNDER_COLUMNS.append(f'rts_under_{t}_min')

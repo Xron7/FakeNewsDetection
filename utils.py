@@ -1,8 +1,10 @@
 import pandas   as pd
 import networkx as nx
 
-def construct_prop_df(tweet_id, prop_path):
-  propagation_path = prop_path + f'{tweet_id}' + '.txt'
+from config import PATH
+
+def construct_prop_df(tweet_id):
+  propagation_path = PATH + 'tree/' + f'{tweet_id}' + '.txt'
 
   sources    = []
   retweeters = []

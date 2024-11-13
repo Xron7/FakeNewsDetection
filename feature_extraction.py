@@ -6,16 +6,9 @@ import emoji
 import string
 
 from tqdm  import tqdm
-from utils import construct_prop_df
-from utils import construct_graph
 
-PATH      = 'twitter15/'
-PROP_PATH = PATH + 'tree/'
-THRESHOLDS = [0, 5, 30, 60, 180, 480, 720, 1440]
-
-RT_UNDER_COLUMNS = []
-for t in THRESHOLDS[1:]:
-  RT_UNDER_COLUMNS.append(f'rts_under_{t}_min')
+from utils  import construct_prop_df, construct_graph
+from config import PATH, THRESHOLDS, RT_UNDER_COLUMNS
 
 ########################################################################################################################
 # Propagation dataset functions
@@ -47,7 +40,7 @@ def get_depth_stats(G, root):
 # Application
 def prop_data_pipeline(tweet_id):
 
-  prop_df = construct_prop_df(tweet_id, PROP_PATH)
+  prop_df = construct_prop_df(tweet_id)
 
   uid = prop_df['retweeter_id'][0]
 
