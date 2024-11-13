@@ -56,5 +56,3 @@ def combine_datasets():
   l16 = pd.read_csv(t16 + 'label.txt', sep = ':', header = None, names = ['label', 'tweet_id'])
   l = pd.concat([l15, l16]).drop_duplicates().reset_index(drop=True)
   l.to_csv(PATH + 'label.txt', sep=':', index=False, header=False)
-
-combine_datasets()
