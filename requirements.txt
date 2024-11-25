@@ -3,4 +3,5 @@ networkx
 matplotlib
 seaborn
 tqdm
-sklearn
+scikit-learn
+jupyter
