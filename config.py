@@ -1,6 +1,6 @@
 PATH            = 'datasets/twitter1516/'
 THRESHOLDS      = [0, 5, 30, 60, 180, 480, 720, 1440]
-EXCLUDE_COLUMNS = ['tweet_id', 'poster', 'tweet', 'label']
+EXCLUDE_COLUMNS = ['tweet_id', 'poster', 'label']
 
 RT_UNDER_COLUMNS = []
 for t in THRESHOLDS[1:]:
