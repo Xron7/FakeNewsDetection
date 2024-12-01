@@ -1,5 +1,7 @@
-import pandas   as pd
-import networkx as nx
+import pandas            as pd
+import networkx          as nx
+import matplotlib.pyplot as plt
+import seaborn           as sns
 
 from config import PATH
 
@@ -56,3 +58,10 @@ def combine_datasets():
   l16 = pd.read_csv(t16 + 'label.txt', sep = ':', header = None, names = ['label', 'tweet_id'])
   l = pd.concat([l15, l16]).drop_duplicates().reset_index(drop=True)
   l.to_csv(PATH + 'label.txt', sep=':', index=False, header=False)
+
+
+def plot_dist(df, column):
+  plt.figure(figsize=(10, 6))
+  sns.kdeplot(df[column], fill=True, alpha=0.3)
+
+  return None
