@@ -1,16 +1,21 @@
+import sys
+import os
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import pandas as pd
 
-from sklearn.model_selection         import train_test_split
-from sklearn.linear_model            import LogisticRegression
-from sklearn.metrics                 import accuracy_score, confusion_matrix, classification_report, log_loss
-from sklearn.preprocessing           import StandardScaler,  MinMaxScaler
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model    import LogisticRegression
+from sklearn.metrics         import accuracy_score, confusion_matrix, classification_report, log_loss
+from sklearn.preprocessing   import StandardScaler
 # from sklearn.feature_extraction.text import CountVectorizer
 
 from config import EXCLUDE_COLUMNS, PATH
 
 EXCLUDE_COLUMNS.append('tweet')
 
-df = pd.read_csv(PATH + 'binary.csv')
+df = pd.read_csv(PATH + sys.argv[1])
 
 X = df.drop(columns = EXCLUDE_COLUMNS)
 y = df['label']
