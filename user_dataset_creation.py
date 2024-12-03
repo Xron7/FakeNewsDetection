@@ -21,6 +21,16 @@ def create_user_df(prop_df):
     user_df.at[poster_idx, "num_rt"] -= 1
     user_df.at[poster_idx, "num_post"] = 1
 
+    time_df = (
+        prop_df.groupby("retweeter_id")['time_rt']
+        .agg(['mean'])
+        .reset_index()
+    )
+
+    time_df.columns = ['user_id', 'time_rt_avg']
+
+    user_df = user_df.merge(time_df, on='user_id', how='left')
+
     return user_df
 
 
@@ -36,7 +46,8 @@ df = (
         df.groupby("user_id", as_index=False)
         .agg({
             "num_rt": "sum",
-            "num_post": "sum"
+            "num_post": "sum",
+            "time_rt_avg": "mean"
         })
     )
 
