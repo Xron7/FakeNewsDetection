@@ -1,7 +1,5 @@
 import pandas            as pd
 import networkx          as nx
-import matplotlib.pyplot as plt
-import seaborn           as sns
 import numpy             as np
 
 from config import PATH
@@ -79,5 +77,22 @@ def find_skewed_columns(df, threshold = 2.5):
 
   return right_skewed, left_skewed
 
+
 def log_transform(df):
   return np.log1p(df)
+
+
+def remove_corr(df, threshold = 0.9):
+
+  correlation_matrix = df.corr()
+
+  upper_triangle = correlation_matrix.where(
+      np.triu(np.ones(correlation_matrix.shape), k=1).astype(bool)
+  )
+
+  highly_corr_cols = [
+      column for column in upper_triangle.columns
+      if any(upper_triangle[column] > threshold)
+  ]
+
+  return df.drop(columns=highly_corr_cols)

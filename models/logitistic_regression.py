@@ -13,7 +13,7 @@ from sklearn.compose         import ColumnTransformer
 from sklearn.pipeline        import Pipeline
 
 from config import EXCLUDE_COLUMNS, PATH
-from utils  import find_skewed_columns, log_transform
+from utils  import log_transform, remove_corr
 
 ########################################################################################################################
 # custom functions
@@ -28,18 +28,20 @@ df = pd.read_csv(PATH + sys.argv[1])
 X = df.drop(columns = EXCLUDE_COLUMNS)
 y = df['label']
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
+########################################################################################################################
+# remove highly correlated
+X = remove_corr(X)
 
 ########################################################################################################################
-# calculate columns to transform
-right_skewed_cols, left_skewed_cols = find_skewed_columns(X)
+## split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 
 ########################################################################################################################
 # pipeline
 preprocessor = ColumnTransformer(
     transformers=[
-        ('log_right', log_transformer, right_skewed_cols+left_skewed_cols),
-        ('scaler', StandardScaler(), X_train.columns)          # Scale other columns
+        ('log_right', log_transformer, X_train.columns),
+        ('scaler', StandardScaler(), X_train.columns)
     ]
 )
 
@@ -66,3 +68,4 @@ print("Classification Report:\n", report)
 
 # TODO
 # Count Vectorizer
+# correlation with target
