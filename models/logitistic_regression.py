@@ -68,6 +68,3 @@ print("Accuracy:", accuracy)
 print("Log Loss:", loss)
 print("Confusion Matrix:\n", conf_matrix)
 print("Classification Report:\n", report)
-
-# TODO
-# correlation with target
