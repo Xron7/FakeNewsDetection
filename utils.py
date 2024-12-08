@@ -2,6 +2,7 @@ import pandas            as pd
 import networkx          as nx
 import matplotlib.pyplot as plt
 import seaborn           as sns
+import numpy             as np
 
 from config import PATH
 
@@ -59,9 +60,30 @@ def combine_datasets():
   l = pd.concat([l15, l16]).drop_duplicates().reset_index(drop=True)
   l.to_csv(PATH + 'label.txt', sep=':', index=False, header=False)
 
-
-def plot_dist(df, column):
-  plt.figure(figsize=(10, 6))
-  sns.kdeplot(df[column], fill=True, alpha=0.3)
-
   return None
+
+
+def create_log_column(df, column, left_skew = False, inplace = False):
+
+  if left_skew:
+    df[f'{column}_log'] = np.log1p(df[column].max() - df[column])
+  else:
+    df[f'{column}_log'] = np.log1p(df[column])
+
+  if inplace:
+    df = df.drop(columns=[column])
+
+  return df
+
+
+def unskew_with_log(df, skewness, threshold=2.5, inplace = False):
+
+  for col, skew in skewness.items():
+    # right skew
+    if skew >= threshold:
+      df = create_log_column(df, col, inplace = inplace)
+    # left skew
+    elif skew <= -threshold:
+      df = create_log_column(df, col, left_skew = True, inplace = inplace)
+
+  return df
