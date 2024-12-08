@@ -63,27 +63,21 @@ def combine_datasets():
   return None
 
 
-def create_log_column(df, column, left_skew = False, inplace = False):
+def find_skewed_columns(df, threshold = 2.5):
 
-  if left_skew:
-    df[f'{column}_log'] = np.log1p(df[column].max() - df[column])
-  else:
-    df[f'{column}_log'] = np.log1p(df[column])
+  skewness = df.skew()
 
-  if inplace:
-    df = df.drop(columns=[column])
-
-  return df
-
-
-def unskew_with_log(df, skewness, threshold=2.5, inplace = False):
-
+  right_skewed = []
+  left_skewed  = []
   for col, skew in skewness.items():
     # right skew
     if skew >= threshold:
-      df = create_log_column(df, col, inplace = inplace)
+      right_skewed.append(col)
     # left skew
     elif skew <= -threshold:
-      df = create_log_column(df, col, left_skew = True, inplace = inplace)
+      left_skewed.append(col)
 
-  return df
+  return right_skewed, left_skewed
+
+def log_transform(df):
+  return np.log1p(df)
