@@ -5,12 +5,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pandas as pd
 
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model    import LogisticRegression
-from sklearn.metrics         import accuracy_score, confusion_matrix, classification_report, log_loss
-from sklearn.preprocessing   import StandardScaler, FunctionTransformer
-from sklearn.compose         import ColumnTransformer
-from sklearn.pipeline        import Pipeline
+from sklearn.model_selection         import train_test_split
+from sklearn.linear_model            import LogisticRegression
+from sklearn.metrics                 import accuracy_score, confusion_matrix, classification_report, log_loss
+from sklearn.preprocessing           import StandardScaler, FunctionTransformer
+from sklearn.compose                 import ColumnTransformer
+from sklearn.pipeline                import Pipeline
+from sklearn.feature_extraction.text import CountVectorizer
+
 
 from config import EXCLUDE_COLUMNS, PATH
 from utils  import log_transform, remove_corr
@@ -21,7 +23,6 @@ log_transformer = FunctionTransformer(log_transform, validate = False)
 
 ########################################################################################################################
 # read df
-EXCLUDE_COLUMNS.append('tweet')
 
 df = pd.read_csv(PATH + sys.argv[1])
 
@@ -31,7 +32,8 @@ y = df['label']
 ########################################################################################################################
 # remove highly correlated
 X = remove_corr(X)
-
+numerical_cols = X.columns.tolist()
+numerical_cols.remove('tweet')
 ########################################################################################################################
 ## split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
@@ -40,8 +42,9 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random
 # pipeline
 preprocessor = ColumnTransformer(
     transformers=[
-        ('log_right', log_transformer, X_train.columns),
-        ('scaler', StandardScaler(), X_train.columns)
+        ('text', CountVectorizer(), 'tweet'),
+        ('log_right', log_transformer, numerical_cols),
+        ('scaler', StandardScaler(), numerical_cols)
     ]
 )
 
@@ -67,5 +70,4 @@ print("Confusion Matrix:\n", conf_matrix)
 print("Classification Report:\n", report)
 
 # TODO
-# Count Vectorizer
 # correlation with target

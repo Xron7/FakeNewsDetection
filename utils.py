@@ -83,8 +83,9 @@ def log_transform(df):
 
 
 def remove_corr(df, threshold = 0.9):
+  df_numeric = df.select_dtypes(exclude=['object'])
 
-  correlation_matrix = df.corr()
+  correlation_matrix = df_numeric.corr()
 
   upper_triangle = correlation_matrix.where(
       np.triu(np.ones(correlation_matrix.shape), k=1).astype(bool)
