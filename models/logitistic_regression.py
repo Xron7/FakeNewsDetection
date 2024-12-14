@@ -2,7 +2,7 @@ import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+print("Current Working Directory:", os.getcwd())
 import pandas as pd
 
 from sklearn.model_selection         import train_test_split
@@ -34,8 +34,9 @@ y = df['label']
 X = remove_corr(X)
 numerical_cols = X.columns.tolist()
 numerical_cols.remove('tweet')
+
 ########################################################################################################################
-## split
+# split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 
 ########################################################################################################################
