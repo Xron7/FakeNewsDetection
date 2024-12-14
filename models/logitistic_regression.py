@@ -44,7 +44,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random
 preprocessor = ColumnTransformer(
     transformers=[
         ('text', CountVectorizer(), 'tweet'),
-        ('log_right', log_transformer, numerical_cols),
+        ('log', log_transformer, numerical_cols),
         ('scaler', StandardScaler(), numerical_cols)
     ]
 )
