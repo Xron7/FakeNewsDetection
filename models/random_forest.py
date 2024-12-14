@@ -39,10 +39,27 @@ pipeline = Pipeline([
 ])
 
 ########################################################################################################################
-# fit and pred
-pipeline.fit(X_train, y_train)
-y_pred  = pipeline.predict(X_test)
-y_proba = pipeline.predict_proba(X_test)[:, 1]
+# grid search
+param_grid = {
+    'model__n_estimators': [50, 100, 200],
+    'model__max_depth': [10, 20, None],
+    'model__min_samples_split': [2, 5, 10],
+    'model__min_samples_leaf': [1, 2, 4],
+    'model__max_features': ['sqrt', 'log2'],
+}
+
+grid_search = GridSearchCV(pipeline, param_grid, cv=5, n_jobs=-1, verbose=1)
+
+grid_search.fit(X_train, y_train)
+
+print(f"Best Parameters: {grid_search.best_params_}")
+print(f"Best Model Accuracy: {grid_search.best_score_}")
+
+########################################################################################################################
+# pred
+
+y_pred  = grid_search.predict(X_test)
+y_proba = grid_search.predict_proba(X_test)[:, 1]
 
 print("Accuracy:", accuracy_score(y_test, y_pred))
 print("ROC-AUC:", roc_auc_score(y_test, y_proba))
