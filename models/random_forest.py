@@ -39,6 +39,21 @@ numerical_cols.remove('tweet')
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 
 ########################################################################################################################
+# importance
+X_imp = X_train.drop(columns = ['tweet'])
+model = RandomForestClassifier()
+model.fit(X_imp, y_train)
+
+importance   = pd.Series(model.feature_importances_, index=X_imp.columns)
+top_features = importance.nlargest(20).index.tolist()
+print(top_features)
+top_features.append('tweet')
+
+X_train = X_train[top_features]
+X_test  = X_test[top_features]
+print(X_train.columns)
+
+########################################################################################################################
 # pipeline
 preprocessor = ColumnTransformer(
     transformers=[
