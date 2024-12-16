@@ -1,8 +1,6 @@
 import sys
 import os
 
-from sklearn.preprocessing import FunctionTransformer, StandardScaler
-
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pandas as pd
@@ -13,9 +11,11 @@ from sklearn.metrics                 import accuracy_score, classification_repor
 from sklearn.compose                 import ColumnTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.pipeline                import Pipeline
+from sklearn.preprocessing           import FunctionTransformer, StandardScaler
+
 
 from config import EXCLUDE_COLUMNS, PATH
-from utils import remove_corr, log_transform
+from utils  import remove_corr, log_transform, get_important_features
 
 ########################################################################################################################
 # custom functions
@@ -31,30 +31,22 @@ y = df['label']
 ########################################################################################################################
 # remove highly correlated
 X = remove_corr(X)
-numerical_cols = X.columns.tolist()
-numerical_cols.remove('tweet')
+
+########################################################################################################################
+# importance
+top_features = get_important_features(X.drop(columns = ['tweet']), y, RandomForestClassifier(), n = 5)
+top_features.append('tweet')
+X = X[top_features]
 
 ########################################################################################################################
 # split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 
 ########################################################################################################################
-# importance
-X_imp = X_train.drop(columns = ['tweet'])
-model = RandomForestClassifier()
-model.fit(X_imp, y_train)
-
-importance   = pd.Series(model.feature_importances_, index=X_imp.columns)
-top_features = importance.nlargest(20).index.tolist()
-print(top_features)
-top_features.append('tweet')
-
-X_train = X_train[top_features]
-X_test  = X_test[top_features]
-print(X_train.columns)
-
-########################################################################################################################
 # pipeline
+numerical_cols = X.columns.tolist()
+numerical_cols.remove('tweet')
+
 preprocessor = ColumnTransformer(
     transformers=[
         ('text', CountVectorizer(), 'tweet'),
@@ -71,10 +63,10 @@ pipeline = Pipeline([
 ########################################################################################################################
 # grid search
 param_grid = {
-    'model__n_estimators':      [350, 450, 550],
-    'model__max_depth':         [10, 20, 30, None],
-    'model__min_samples_split': [3, 4],
-    'model__min_samples_leaf':  [1, 2],
+    'model__n_estimators':      [550],
+    'model__max_depth':         [None],
+    'model__min_samples_split': [3],
+    'model__min_samples_leaf':  [1],
     'model__max_features':      ['log2'],
 }
 

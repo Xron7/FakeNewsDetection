@@ -97,3 +97,12 @@ def remove_corr(df, threshold = 0.9):
   ]
 
   return df.drop(columns=highly_corr_cols)
+
+def get_important_features(X, y, model, n = 15):
+
+  model.fit(X, y)
+
+  importance = pd.Series(model.feature_importances_, index=X.columns)
+  top_features = importance.nlargest(n).index.tolist()
+
+  return top_features
