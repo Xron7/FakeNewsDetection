@@ -33,7 +33,7 @@ y = df['label']
 X = remove_corr(X)
 
 ########################################################################################################################
-# importance
+# dimensionality reduction
 top_features = get_important_features(X.drop(columns = ['tweet']), y, RandomForestClassifier(), n = 5)
 top_features.append('tweet')
 X = X[top_features]
