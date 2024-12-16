@@ -1,6 +1,9 @@
 import pandas            as pd
 import networkx          as nx
 import numpy             as np
+from sklearn.metrics import accuracy_score, roc_auc_score, log_loss, confusion_matrix, classification_report
+
+from sklearn.model_selection import GridSearchCV
 
 from config import PATH
 
@@ -106,3 +109,26 @@ def get_important_features(X, y, model, n = 15):
   top_features = importance.nlargest(n).index.tolist()
 
   return top_features
+
+def perform_grid_search(pipeline, param_grid, X_train, y_train):
+  grid_search = GridSearchCV(pipeline, param_grid, cv=5, n_jobs=-1, verbose=1)
+
+  grid_search.fit(X_train, y_train)
+
+  print(f"Best Parameters: {grid_search.best_params_}")
+  print(f"Best Model Accuracy: {grid_search.best_score_}")
+
+  return grid_search
+
+
+def evaluate_model(model, X_test, y_test):
+  y_pred = model.predict(X_test)
+  y_proba = model.predict_proba(X_test)[:, 1]
+
+  print("Accuracy:", accuracy_score(y_test, y_pred))
+  print("ROC-AUC:", roc_auc_score(y_test, y_proba))
+  print("Log Loss:", log_loss(y_test, y_proba))
+  print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
+  print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+  return None

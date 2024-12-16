@@ -6,8 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pandas as pd
 
 from sklearn.ensemble                import RandomForestClassifier
-from sklearn.model_selection         import train_test_split, GridSearchCV
-from sklearn.metrics                 import accuracy_score, classification_report, roc_auc_score
+from sklearn.model_selection         import train_test_split
 from sklearn.compose                 import ColumnTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.pipeline                import Pipeline
@@ -15,7 +14,7 @@ from sklearn.preprocessing           import FunctionTransformer, StandardScaler
 
 
 from config import EXCLUDE_COLUMNS, PATH
-from utils  import remove_corr, log_transform, get_important_features
+from utils import remove_corr, log_transform, get_important_features, perform_grid_search, evaluate_model
 
 ########################################################################################################################
 # custom functions
@@ -70,18 +69,8 @@ param_grid = {
     'model__max_features':      ['log2'],
 }
 
-grid_search = GridSearchCV(pipeline, param_grid, cv=5, n_jobs=-1, verbose=1)
-
-grid_search.fit(X_train, y_train)
-
-print(f"Best Parameters: {grid_search.best_params_}")
-print(f"Best Model Accuracy: {grid_search.best_score_}")
+grid_search = perform_grid_search(pipeline, param_grid, X_train, y_train)
 
 ########################################################################################################################
-# pred
-y_pred  = grid_search.predict(X_test)
-y_proba = grid_search.predict_proba(X_test)[:, 1]
-
-print("Accuracy:", accuracy_score(y_test, y_pred))
-print("ROC-AUC:", roc_auc_score(y_test, y_proba))
-print("\nClassification Report:\n", classification_report(y_test, y_pred))
+# evaluate
+evaluate_model(grid_search, X_test, y_test)

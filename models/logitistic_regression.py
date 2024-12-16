@@ -15,7 +15,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 
 from config import EXCLUDE_COLUMNS, PATH
-from utils  import log_transform, remove_corr
+from utils import log_transform, remove_corr, evaluate_model
 
 ########################################################################################################################
 # custom functions
@@ -55,17 +55,6 @@ pipeline = Pipeline([
 ])
 
 ########################################################################################################################
-# fit and pred
+# fit and evaluate
 pipeline.fit(X_train, y_train)
-y_pred       = pipeline.predict(X_test)
-y_pred_proba = pipeline.predict_proba(X_test)
-
-accuracy    = accuracy_score(y_test, y_pred)
-loss        = log_loss(y_test, y_pred_proba)
-conf_matrix = confusion_matrix(y_test, y_pred)
-report      = classification_report(y_test, y_pred)
-
-print("Accuracy:", accuracy)
-print("Log Loss:", loss)
-print("Confusion Matrix:\n", conf_matrix)
-print("Classification Report:\n", report)
+evaluate_model(pipeline, X_test, y_test)
