@@ -13,7 +13,7 @@ from sklearn.pipeline                import Pipeline
 from sklearn.preprocessing           import StandardScaler
 
 from config import EXCLUDE_COLUMNS, PATH
-from utils import remove_corr, perform_grid_search, evaluate_model, get_important_features
+from utils import remove_corr, perform_grid_search, evaluate_model
 
 ########################################################################################################################
 # read df
