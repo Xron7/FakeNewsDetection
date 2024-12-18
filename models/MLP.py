@@ -5,15 +5,19 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pandas as pd
 
-from sklearn.svm                     import SVC
+from sklearn.neural_network          import MLPClassifier
 from sklearn.model_selection         import train_test_split
 from sklearn.compose                 import ColumnTransformer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.pipeline                import Pipeline
-from sklearn.preprocessing           import StandardScaler
+from sklearn.preprocessing           import FunctionTransformer, StandardScaler
 
 from config import EXCLUDE_COLUMNS, PATH
-from utils  import remove_corr, perform_grid_search, evaluate_model
+from utils import remove_corr, log_transform, perform_grid_search, evaluate_model
+
+########################################################################################################################
+# custom functions
+log_transformer = FunctionTransformer(log_transform, validate = False)
 
 ########################################################################################################################
 # read df
@@ -38,22 +42,19 @@ numerical_cols.remove('tweet')
 preprocessor = ColumnTransformer(
     transformers=[
         ('text', CountVectorizer(), 'tweet'),
+        ('log', log_transformer, numerical_cols),
         ('scaler', StandardScaler(), numerical_cols)
     ]
 )
 
 pipeline = Pipeline([
     ('preprocessor', preprocessor),
-    ('model', SVC(kernel="linear", probability=True))
+    ('model', MLPClassifier())
 ])
 
 ########################################################################################################################
 # grid search
-param_grid = {
-    # 'C': [0.1, 1, 10, 100],
-    # 'gamma': [0.001, 0.01, 0.1, 1, 'scale', 'auto'],
-    # 'tol': [1e-4, 1e-3, 1e-2]
-}
+param_grid = {}
 
 grid_search = perform_grid_search(pipeline, param_grid, X_train, y_train)
 
