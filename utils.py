@@ -101,6 +101,7 @@ def remove_corr(df, threshold = 0.9):
 
   return df.drop(columns=highly_corr_cols)
 
+
 def get_important_features(X, y, model, n = 15):
 
   model.fit(X, y)
@@ -109,6 +110,7 @@ def get_important_features(X, y, model, n = 15):
   top_features = importance.nlargest(n).index.tolist()
 
   return top_features
+
 
 def perform_grid_search(pipeline, param_grid, X_train, y_train):
   grid_search = GridSearchCV(pipeline, param_grid, cv=5, n_jobs=-1, verbose=1)
@@ -130,5 +132,13 @@ def evaluate_model(model, X_test, y_test):
   print("Log Loss:", log_loss(y_test, y_proba))
   print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
   print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+  return None
+
+
+def extract_tweets_file(file_name):
+  df = pd.read_csv(PATH + file_name)
+  df = df['tweet']
+  df.to_csv(PATH + 'tweets.txt', index = False)
 
   return None
