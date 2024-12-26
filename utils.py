@@ -3,7 +3,7 @@ import networkx          as nx
 import numpy             as np
 from sklearn.metrics import accuracy_score, roc_auc_score, log_loss, confusion_matrix, classification_report
 
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
 from config import PATH
 
@@ -113,7 +113,8 @@ def get_important_features(X, y, model, n = 15):
 
 
 def perform_grid_search(pipeline, param_grid, X_train, y_train):
-  grid_search = GridSearchCV(pipeline, param_grid, cv=5, n_jobs=-1, verbose=1)
+  cv = StratifiedKFold(n_splits=4, shuffle=True, random_state=42)
+  grid_search = GridSearchCV(pipeline, param_grid, cv=cv, n_jobs=-1, verbose=1)
 
   grid_search.fit(X_train, y_train)
 

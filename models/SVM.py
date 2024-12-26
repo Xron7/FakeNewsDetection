@@ -44,15 +44,15 @@ preprocessor = ColumnTransformer(
 
 pipeline = Pipeline([
     ('preprocessor', preprocessor),
-    ('model', SVC(kernel="linear", probability=True))
+    ('model', SVC(probability=True, random_state= 42))
 ])
 
 ########################################################################################################################
 # grid search
 param_grid = {
-    # 'C': [0.1, 1, 10, 100],
-    # 'gamma': [0.001, 0.01, 0.1, 1, 'scale', 'auto'],
-    # 'tol': [1e-4, 1e-3, 1e-2]
+    'model__C': [0.01, 0.1, 1, 10, 100, 1000],
+    'model__gamma': [0.01, 0.05,  0.1],
+    'model__kernel': ['rbf', 'linear']
 }
 
 grid_search = perform_grid_search(pipeline, param_grid, X_train, y_train)

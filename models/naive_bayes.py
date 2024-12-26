@@ -55,7 +55,7 @@ pipeline = Pipeline([
 
 ########################################################################################################################
 # grid search
-param_grid = {}
+param_grid = {'model__alpha': [0.1, 0.5, 1.0, 5.0, 10.0]}
 
 grid_search = perform_grid_search(pipeline, param_grid, X_train, y_train)
 

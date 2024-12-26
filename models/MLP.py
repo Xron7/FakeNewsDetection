@@ -28,7 +28,7 @@ y = df['label']
 
 ########################################################################################################################
 # remove highly correlated
-X = remove_corr(X)
+# X = remove_corr(X)
 
 ########################################################################################################################
 # split
@@ -49,12 +49,19 @@ preprocessor = ColumnTransformer(
 
 pipeline = Pipeline([
     ('preprocessor', preprocessor),
-    ('model', MLPClassifier())
+    ('model', MLPClassifier(random_state=42))
 ])
 
 ########################################################################################################################
 # grid search
-param_grid = {}
+param_grid = {
+    'model__hidden_layer_sizes': [(100, 50, 25, 10)],
+    'model__alpha': [0.0001],
+    'model__learning_rate': ['constant'],
+    'model__learning_rate_init': [0.001],
+    'model__activation': ['relu'],
+    'model__max_iter': [1000]
+    }
 
 grid_search = perform_grid_search(pipeline, param_grid, X_train, y_train)
 

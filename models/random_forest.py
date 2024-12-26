@@ -56,15 +56,15 @@ preprocessor = ColumnTransformer(
 
 pipeline = Pipeline([
     ('preprocessor', preprocessor),
-    ('model', RandomForestClassifier())
+    ('model', RandomForestClassifier(random_state=42))
 ])
 
 ########################################################################################################################
 # grid search
 param_grid = {
-    'model__n_estimators':      [550],
+    'model__n_estimators':      [400, 500, 600],
     'model__max_depth':         [None],
-    'model__min_samples_split': [3],
+    'model__min_samples_split': [4, 5, 6],
     'model__min_samples_leaf':  [1],
     'model__max_features':      ['log2'],
 }
