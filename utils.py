@@ -1,8 +1,9 @@
 import pandas            as pd
 import networkx          as nx
 import numpy             as np
-from sklearn.metrics import accuracy_score, roc_auc_score, log_loss, confusion_matrix, classification_report
+import joblib
 
+from sklearn.metrics         import accuracy_score, roc_auc_score, log_loss, confusion_matrix, classification_report
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 
 from config import PATH
@@ -143,3 +144,7 @@ def extract_tweets_file(file_name):
   df.to_csv(PATH + 'tweets.txt', index = False)
 
   return None
+
+
+def save_model(model, name):
+  joblib.dump(model, 'outputs/' + name + '.pkl')

@@ -2,7 +2,7 @@ import sys
 import os
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-print("Current Working Directory:", os.getcwd())
+
 import pandas as pd
 
 from sklearn.model_selection         import train_test_split
@@ -14,7 +14,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 
 from config import EXCLUDE_COLUMNS, PATH
-from utils import log_transform, remove_corr, evaluate_model
+from utils import log_transform, remove_corr, evaluate_model, save_model
 
 ########################################################################################################################
 # custom functions
@@ -50,10 +50,12 @@ preprocessor = ColumnTransformer(
 
 pipeline = Pipeline([
     ('preprocessor', preprocessor),
-    ('model', LogisticRegression(max_iter=1000))
+    ('model', LogisticRegression(max_iter=1000, random_state=42))
 ])
 
 ########################################################################################################################
 # fit and evaluate
 pipeline.fit(X_train, y_train)
 evaluate_model(pipeline, X_test, y_test)
+
+save_model(pipeline, 'test')
