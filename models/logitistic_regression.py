@@ -67,4 +67,3 @@ pipeline.fit(X_train, y_train)
 evaluate_model(pipeline, X_test, y_test)
 
 save_model(pipeline, 'log_binary')
-
