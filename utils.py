@@ -100,6 +100,8 @@ def remove_corr(df, threshold = 0.9):
       if any(upper_triangle[column] > threshold)
   ]
 
+  print('removed columns:', highly_corr_cols)
+
   return df.drop(columns=highly_corr_cols)
 
 
@@ -147,4 +149,16 @@ def extract_tweets_file(file_name):
 
 
 def save_model(model, name):
-  joblib.dump(model, 'outputs/' + name + '.pkl')
+  joblib.dump(model, 'models/output/' + name + '.pkl')
+
+  return None
+
+def add_sentiment_scores(df, file = 'sentiment_analysis.csv'):
+  sent_df = pd.read_csv(PATH + 'sentiment_analysis.csv')
+
+  sent_df['polarity']  = sent_df['positive'] - sent_df['negative']
+  sent_df['intensity'] = np.abs(sent_df['positive'] - sent_df['negative'])
+
+  sent_df = sent_df.drop(columns=['tweet', 'positive', 'negative', 'neutral'])
+
+  return pd.concat([df, sent_df], axis=1), sent_df.columns.tolist()

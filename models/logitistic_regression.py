@@ -14,7 +14,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 
 from config import EXCLUDE_COLUMNS, PATH
-from utils import log_transform, remove_corr, evaluate_model, save_model
+from utils import log_transform, remove_corr, evaluate_model, save_model, add_sentiment_scores
 
 ########################################################################################################################
 # custom functions
@@ -22,9 +22,14 @@ log_transformer = FunctionTransformer(log_transform, validate = False)
 
 ########################################################################################################################
 # read df
-
 df = pd.read_csv(PATH + sys.argv[1])
 
+########################################################################################################################
+# sentiment
+df, sent_cols = add_sentiment_scores(df)
+
+########################################################################################################################
+# X and y
 X = df.drop(columns = EXCLUDE_COLUMNS)
 y = df['label']
 
@@ -33,6 +38,10 @@ y = df['label']
 X = remove_corr(X)
 numerical_cols = X.columns.tolist()
 numerical_cols.remove('tweet')
+
+sent_cols.remove('intensity')
+for c in sent_cols:
+    numerical_cols.remove(c)
 
 ########################################################################################################################
 # split
@@ -58,4 +67,5 @@ pipeline = Pipeline([
 pipeline.fit(X_train, y_train)
 evaluate_model(pipeline, X_test, y_test)
 
-save_model(pipeline, 'test')
+save_model(pipeline, 'log_binary')
+
