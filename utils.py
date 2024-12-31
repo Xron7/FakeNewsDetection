@@ -154,7 +154,7 @@ def save_model(model, name):
   return None
 
 def add_sentiment_scores(df, file = 'sentiment_analysis.csv'):
-  sent_df = pd.read_csv(PATH + 'sentiment_analysis.csv')
+  sent_df = pd.read_csv(PATH + file)
 
   sent_df['polarity']  = sent_df['positive'] - sent_df['negative']
   sent_df['intensity'] = np.abs(sent_df['positive'] - sent_df['negative'])
