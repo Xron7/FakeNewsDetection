@@ -13,7 +13,7 @@ from sklearn.pipeline                import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 
 from config import EXCLUDE_COLUMNS, PATH
-from utils import log_transform, remove_corr, evaluate_model, save_model, add_sentiment_scores
+from utils  import log_transform, remove_corr, evaluate_model, save_model, add_sentiment_scores
 
 ########################################################################################################################
 # custom functions
