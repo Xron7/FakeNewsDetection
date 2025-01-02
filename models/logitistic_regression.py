@@ -23,6 +23,9 @@ log_transformer = FunctionTransformer(log_transform, validate = False)
 # read df
 df = pd.read_csv(PATH + sys.argv[1])
 
+#TODO
+df['user_rtXid'] = df['user_rt'] * df['user_id']
+
 ########################################################################################################################
 # sentiment
 df, sent_cols = add_sentiment_scores(df)
