@@ -23,12 +23,14 @@ log_transformer = FunctionTransformer(log_transform, validate = False)
 # read df
 df = pd.read_csv(PATH + sys.argv[1])
 
-#TODO
-df['user_rtXid'] = df['user_rt'] * df['user_id']
-
 ########################################################################################################################
 # sentiment
 df, sent_cols = add_sentiment_scores(df)
+
+########################################################################################################################
+# combinations
+df['user_rtXid'] = df['user_rt'] * df['user_id']
+df['hashtags2rt'] = df['num_hashtags']/ (df['num_rt'] + 0.0000000001)
 
 ########################################################################################################################
 # X and y
