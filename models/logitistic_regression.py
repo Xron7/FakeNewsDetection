@@ -13,7 +13,7 @@ from sklearn.pipeline                import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 
 from config import EXCLUDE_COLUMNS, PATH
-from utils  import log_transform, remove_corr, evaluate_model, save_model, add_sentiment_scores
+from utils import log_transform, remove_corr, evaluate_model, add_sentiment_scores, score_users_binary
 
 ########################################################################################################################
 # custom functions
@@ -34,6 +34,7 @@ df['hashtags2rt'] = df['num_hashtags']/ (df['num_rt'] + 0.0000000001)
 
 ########################################################################################################################
 # X and y
+EXCLUDE_COLUMNS.remove('tweet_id') # improved the score a bit
 X = df.drop(columns = EXCLUDE_COLUMNS)
 y = df['label']
 
@@ -69,6 +70,8 @@ pipeline = Pipeline([
 ########################################################################################################################
 # fit and evaluate
 pipeline.fit(X_train, y_train)
-evaluate_model(pipeline, X_test, y_test)
+y_pred = evaluate_model(pipeline, X_test, y_test)
 
-save_model(pipeline, 'log_binary')
+########################################################################################################################
+# score users
+score_users_binary(pipeline, X_test, y_pred)

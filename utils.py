@@ -5,8 +5,10 @@ import joblib
 
 from sklearn.metrics         import accuracy_score, roc_auc_score, log_loss, confusion_matrix, classification_report
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from tqdm                    import tqdm
 
 from config import PATH
+
 
 def construct_prop_df(tweet_id):
   propagation_path = PATH + 'tree/' + f'{tweet_id}' + '.txt'
@@ -35,6 +37,7 @@ def construct_prop_df(tweet_id):
 })
     return propagation_df
 
+
 def construct_graph(df):
   G = nx.DiGraph()
 
@@ -48,6 +51,7 @@ def construct_graph(df):
   return G
 
 
+# call it to use it
 def combine_datasets():
   t15 = 'datasets/twitter15/'
   t16 = 'datasets/twitter16/'
@@ -63,23 +67,6 @@ def combine_datasets():
   l.to_csv(PATH + 'label.txt', sep=':', index=False, header=False)
 
   return None
-
-
-def find_skewed_columns(df, threshold = 2.5):
-
-  skewness = df.skew()
-
-  right_skewed = []
-  left_skewed  = []
-  for col, skew in skewness.items():
-    # right skew
-    if skew >= threshold:
-      right_skewed.append(col)
-    # left skew
-    elif skew <= -threshold:
-      left_skewed.append(col)
-
-  return right_skewed, left_skewed
 
 
 def log_transform(df):
@@ -137,19 +124,14 @@ def evaluate_model(model, X_test, y_test):
   print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
   print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
-  return None
+  return y_pred
 
 
+# call it to use it
 def extract_tweets_file(file_name):
   df = pd.read_csv(PATH + file_name)
   df = df['tweet']
   df.to_csv(PATH + 'tweets.txt', index = False)
-
-  return None
-
-
-def save_model(model, name):
-  joblib.dump(model, 'models/output/' + name + '.pkl')
 
   return None
 
@@ -163,3 +145,55 @@ def add_sentiment_scores(df, file = 'sentiment_analysis.csv'):
   sent_df = sent_df.drop(columns=['tweet', 'positive', 'negative', 'neutral'])
 
   return pd.concat([df, sent_df], axis=1), sent_df.columns.tolist()
+
+
+def get_retweet_stats(tweet_id):
+  prop_df = construct_prop_df(tweet_id)
+  prop_df = prop_df[1:]  # to exclude the poster
+
+  return prop_df[['retweeter_id', 'time_elapsed']]
+
+
+def score_users_binary(model, X_test, y_pred, user_stats_file = 'user_stats.csv', max_rt_score = 0.8, alpha = 1):
+  flag      = 'tested'
+  score_col = 'score'
+
+  print('-------------------------------------------------------------------------------------------------------------')
+  print('Scoring users of test set...')
+
+  y_pred = [-1 if val == 0 else val for val in y_pred] # to smooth operations
+
+  user_stats_df = pd.read_csv(PATH + user_stats_file, index_col = 0)
+
+  user_stats_df[score_col] = 0.0
+  user_stats_df[flag]      = 0
+
+  for i, (x, y) in tqdm(enumerate(zip(X_test.iterrows(), y_pred))):
+
+    poster   = x[1]['user_id']
+    tweet_id = x[1]['tweet_id']
+
+    user_stats_df.loc[poster, flag]       = 1
+    user_stats_df.loc[poster, score_col] += y
+
+    # retweeter scoring
+    retweet_df = get_retweet_stats(tweet_id)
+    for j, rt in retweet_df.iterrows():
+      rter = rt['retweeter_id']
+      t    = rt['time_elapsed']
+
+      user_stats_df.loc[int(rter), flag] = 1
+
+      value = max_rt_score * np.exp(-alpha * t / 60)
+
+      user_stats_df.loc[int(rter), score_col] += y * value
+
+      break
+    break
+
+  test_df = user_stats_df[user_stats_df[flag] == 1]
+
+  #TODO visualize/score
+  print(test_df.head())
+
+  return None
