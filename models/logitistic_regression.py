@@ -1,7 +1,4 @@
 import sys
-import os
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pandas as pd
 
@@ -13,7 +10,7 @@ from sklearn.pipeline                import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 
 from config import EXCLUDE_COLUMNS, PATH
-from utils import log_transform, remove_corr, evaluate_model, add_sentiment_scores, score_users_binary
+from utils  import log_transform, remove_corr, evaluate_model, add_sentiment_scores, score_users_binary
 
 ########################################################################################################################
 # custom functions

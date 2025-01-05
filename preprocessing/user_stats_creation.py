@@ -28,7 +28,7 @@ for index, row in tqdm(tweets_df.iterrows(), desc = 'Constructing User Stats'):
     prop_df = construct_prop_df(row['tweet_id'])
     prop_df = prop_df[1:]
 
-    retweeters = get_retweet_stats(row['tweet_id'])['retweeter'].tolist()
+    retweeters = get_retweet_stats(row['tweet_id'])['retweeter_id'].tolist()
 
     for rt in retweeters:
         users_df.loc[int(rt), f'num_rt_{label}'] += 1
