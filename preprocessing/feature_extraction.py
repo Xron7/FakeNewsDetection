@@ -29,13 +29,11 @@ def get_half_life(df, time_total):
 def count_rt_circles(df):
   return df[df['time_rt'] == 0.0].shape[0]
 
-
 ########################################################################################################################
 # Graph Functions
 def get_depth_stats(G, root):
     lengths = list(nx.single_source_shortest_path_length(G, root).values())
     return max(lengths), np.mean(lengths)
-
 
 ########################################################################################################################
 # Application
@@ -91,7 +89,6 @@ def feature_extraction_pipeline(df):
 
   return df
 
-
 ########################################################################################################################
 # Tweet functions
 def tweet_pipeline(tweet):
@@ -104,7 +101,7 @@ def tweet_pipeline(tweet):
     num_hashtags = len(re.findall(r'#\w+', tweet))
     num_all_caps = len([word for word in words if word.isupper()]) - num_urls  # to not count URL
     num_emoji    = len([char for char in tweet if char in emoji.EMOJI_DATA])
-    num_punc     = sum(1 for char in tweet if char in string.punctuation) - num_hashtags - num_mentions  # to not count metions and hashtags
+    num_punc     = sum(1 for char in tweet if char in string.punctuation) - num_hashtags - num_mentions  # to not count mentions and hashtags
 
     features = {
         'length':       length,
@@ -119,7 +116,6 @@ def tweet_pipeline(tweet):
 
     return features
 
-
 ########################################################################################################################
 
 tweets_df = pd.read_csv(PATH + 'source_tweets.txt', sep = '\t', header = None, names = ['tweet_id', 'tweet'])
@@ -133,8 +129,3 @@ df        = pd.merge(tweets_df, labels_df, on="tweet_id", how="left")
 df = feature_extraction_pipeline(df)
 
 df.to_csv(PATH + 'dataset_enhanced.csv', index=False)
-
-# TO DO
-# hashtag similiarity?
-# user based dataset?
-# sentiment analysis?
