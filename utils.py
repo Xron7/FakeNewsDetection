@@ -186,14 +186,10 @@ def score_users_binary(model, X_test, y_pred, user_stats_file = 'user_stats.csv'
 
       value = max_rt_score * np.exp(-alpha * t / 60)
 
-      user_stats_df.loc[int(rter), score_col] += y * value
+      user_stats_df.loc[int(rter), score_col] += y * value # true increases, false decreases
 
-      break
-    break
+  score_df = user_stats_df[user_stats_df[flag] == 1].drop(columns = 'tested')
 
-  test_df = user_stats_df[user_stats_df[flag] == 1]
-
-  #TODO visualize/score
-  print(test_df.head())
+  score_df.to_csv(PATH + 'user_scores.csv')
 
   return None
