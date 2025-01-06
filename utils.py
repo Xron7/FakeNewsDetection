@@ -184,7 +184,7 @@ def score_users_binary(model, X_test, y_pred, user_stats_file = 'user_stats.csv'
 
       user_stats_df.loc[int(rter), flag] = 1
 
-      value = max_rt_score * np.exp(-alpha * t / 60)
+      value = max_rt_score * np.exp(-alpha * max(0,t) / 60)
 
       user_stats_df.loc[int(rter), score_col] += y * value # true increases, false decreases
 
