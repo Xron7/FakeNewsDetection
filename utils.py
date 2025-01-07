@@ -98,6 +98,8 @@ def get_important_features(X, y, model, n = 15):
 
   importance = pd.Series(model.feature_importances_, index=X.columns)
   top_features = importance.nlargest(n).index.tolist()
+  print(f'top {n} features:')
+  print(top_features)
 
   return top_features
 
