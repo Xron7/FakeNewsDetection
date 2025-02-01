@@ -41,4 +41,4 @@ G = nx.DiGraph()
 edges = zip(sources, targets, weights)
 G.add_edges_from((source, retweeter, {'weight': weight}) for source, retweeter, weight in edges)
 
-nx.write_weighted_edgelist(G, "network.csv", delimiter=',')
+nx.write_weighted_edgelist(G, PATH + "network.csv", delimiter=',')

@@ -1,5 +1,5 @@
 ###
-# Creates the user statistics based on how many tweets of each type they tweeted or retweeted
+# Creates the user/node features for use in the GAT
 ###
 
 import pandas as pd
@@ -10,18 +10,18 @@ from utils  import construct_prop_df, get_retweet_stats
 from config import PATH
 
 users_df  = pd.read_csv(PATH + 'user_dataset.csv', index_col=0)
-tweets_df = pd.read_csv(PATH + 'binary.csv')
+tweets_df = pd.read_csv(PATH + 'dataset_enhanced.csv')
 
-users_df['num_post_true']  = 0
-users_df['num_post_false'] = 0
-users_df['num_rt_false']   = 0
-users_df['num_rt_true']    = 0
+types = ['post', 'rt']
+labels = tweets_df['label'].unique()
 
-for index, row in tqdm(tweets_df.iterrows(), desc = 'Constructing User Stats'):
+for t in types:
+    for l in labels:
+        users_df[f'num_{t}_{l}'] = 0
 
-    label = 'false'
-    if row['label'] == 1:
-        label = 'true'
+for index, row in tqdm(tweets_df.iterrows(), desc = 'Constructing Node Features'):
+
+    label = row['label']
 
     users_df.loc[row['poster'], f'num_post_{label}'] += 1
 
@@ -33,4 +33,4 @@ for index, row in tqdm(tweets_df.iterrows(), desc = 'Constructing User Stats'):
     for rt in retweeters:
         users_df.loc[int(rt), f'num_rt_{label}'] += 1
 
-users_df.to_csv(PATH + 'user_stats.csv')
+users_df.to_csv(PATH + 'node_features.csv')
