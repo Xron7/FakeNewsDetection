@@ -8,7 +8,7 @@ from sklearn.compose                 import ColumnTransformer
 from sklearn.pipeline                import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 
-from config import EXCLUDE_COLUMNS, PATH, MODELS
+from config import EXCLUDE_COLUMNS, PATH, MODELS, SCALERS
 from utils import log_transform, remove_corr, evaluate_model, add_sentiment_scores, score_users_binary, parse_config, \
     get_important_features
 
@@ -22,7 +22,7 @@ df = pd.read_csv(PATH + dataset)
 
 model_name = config['model']
 model      = MODELS[model_name]
-print(f'model= {model_name}')
+print(f'model = {model_name}')
 print('---------------------------------------------------------------------------------------------------------------')
 
 ########################################################################################################################
@@ -80,11 +80,15 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random
 
 ########################################################################################################################
 # pipeline
+scaler_name = config['scaler']
+scaler      = SCALERS[scaler_name]
+print(f'scaler = {scaler_name}')
+
 preprocessor = ColumnTransformer(
     transformers=[
         ('text',   CountVectorizer(), 'tweet')         if config['count_matrix'] else None,
         ('log',    log_transformer,   numerical_cols ) if config['log']          else None,
-        ('scaler', StandardScaler(),  numerical_cols)  if config['scale']        else None
+        ('scaler', scaler(),          numerical_cols)  if scaler_name            else None
     ]
 )
 preprocessor.transformers = [t for t in preprocessor.transformers if t is not None]

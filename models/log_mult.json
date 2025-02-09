@@ -20,7 +20,8 @@
   }],
   "num_exclude": ["polarity"],
   "count_matrix": true,
-  "scale": true,
+  "scaler": "standard",
   "remove_corr": true,
-  "score_users": false
+  "score_users": false,
+  "top_features": null
 }
