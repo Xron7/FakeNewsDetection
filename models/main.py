@@ -3,14 +3,14 @@ import sys
 import pandas as pd
 
 from sklearn.model_selection         import train_test_split
-from sklearn.preprocessing           import StandardScaler, FunctionTransformer
+from sklearn.preprocessing           import FunctionTransformer
 from sklearn.compose                 import ColumnTransformer
 from sklearn.pipeline                import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 
 from config import EXCLUDE_COLUMNS, PATH, MODELS, SCALERS
-from utils import log_transform, remove_corr, evaluate_model, add_sentiment_scores, score_users_binary, parse_config, \
-    get_important_features
+from utils  import log_transform, remove_corr, evaluate_model, add_sentiment_scores, score_users_binary, parse_config, \
+    get_important_features, perform_grid_search
 
 ########################################################################################################################
 # Setup
@@ -25,6 +25,7 @@ model      = MODELS[model_name]
 print(f'model = {model_name}')
 print('---------------------------------------------------------------------------------------------------------------')
 
+params = config['params']
 ########################################################################################################################
 # Transformations
 # log
@@ -81,7 +82,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random
 ########################################################################################################################
 # pipeline
 scaler_name = config.get('scaler', None)
-scaler      = SCALERS[scaler_name]
+scaler      = SCALERS.get(scaler_name, None)
 print(f'scaler = {scaler_name}')
 
 preprocessor = ColumnTransformer(
@@ -95,14 +96,18 @@ preprocessor.transformers = [t for t in preprocessor.transformers if t is not No
 
 pipeline = Pipeline([
     ('preprocessor', preprocessor),
-    ('model', model(**config['params']))
+    ('model', model() if config.get('grid_search', False) else model(**config['params']))
 ])
 
 print('---------------------------------------------------------------------------------------------------------------')
 
 ########################################################################################################################
 # fit and evaluate
-pipeline.fit(X_train, y_train)
+if config.get('grid_search', False):
+    pipeline = perform_grid_search(pipeline, params, X_train, y_train)
+else:
+    pipeline.fit(X_train, y_train)
+
 y_pred = evaluate_model(pipeline, X_test, y_test, mode = config['mode'])
 
 ########################################################################################################################
