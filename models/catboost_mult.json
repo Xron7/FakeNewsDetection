@@ -1,12 +1,15 @@
 {
   "mode": "multiclass",
-  "model": "forest",
+  "model": "catboost",
   "params": {
-    "n_estimators": 500,
-    "max_depth": null,
-    "min_samples_split": 5,
-    "min_samples_leaf": 1,
-    "max_features": "log2",
+    "iterations": 1300,
+    "learning_rate": 0.1,
+    "depth": 7,
+    "l2_leaf_reg": 5,
+    "bagging_temperature": 0.5,
+    "random_strength": 7,
+    "verbose": 0,
+    "allow_writing_files": false,
     "random_state": 42
   },
   "dataset": "dataset.csv",
@@ -22,10 +25,10 @@
     "c2": "num_rt",
     "op": "div"
   }],
-  "num_exclude": [],
+  "num_exclude": ["polarity"],
   "count_matrix": true,
-  "scale": true,
-  "remove_corr": true,
+  "scale": false,
+  "remove_corr": false,
   "score_users": false,
-  "top_features": 5
+  "top_features": 0
 }

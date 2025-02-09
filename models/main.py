@@ -87,6 +87,7 @@ preprocessor = ColumnTransformer(
         ('scaler', StandardScaler(),  numerical_cols)  if config['scale']        else None
     ]
 )
+preprocessor.transformers = [t for t in preprocessor.transformers if t is not None]
 
 pipeline = Pipeline([
     ('preprocessor', preprocessor),

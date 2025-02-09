@@ -1,5 +1,6 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble     import RandomForestClassifier
+from catboost             import CatBoostClassifier
 
 PATH            = '../datasets/twitter1516/'
 THRESHOLDS      = [0, 5, 30, 60, 180, 480, 720, 1440]
@@ -11,5 +12,6 @@ for t in THRESHOLDS[1:]:
 
 MODELS = {
   'logistic': LogisticRegression,
-  'forest':   RandomForestClassifier
+  'forest':   RandomForestClassifier,
+  'catboost': CatBoostClassifier
 }
