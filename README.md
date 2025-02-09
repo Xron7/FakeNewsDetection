@@ -16,7 +16,9 @@ so that you can select the venv python from jupyter notebook
 ## TO DO
 
 - Add the order of the file execution
-- Fix the prop datasets
+- Fix the prop datasets for classification
 - User clustering
 - Prediction based on user-only features and propagation
 - Leave-one-out for logistic regression
+- logistic regression for multi
+- refactor the rest
