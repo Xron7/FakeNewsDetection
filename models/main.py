@@ -9,7 +9,8 @@ from sklearn.pipeline                import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 
 from config import EXCLUDE_COLUMNS, PATH, MODELS
-from utils import log_transform, remove_corr, evaluate_model, add_sentiment_scores, score_users_binary, parse_config
+from utils import log_transform, remove_corr, evaluate_model, add_sentiment_scores, score_users_binary, parse_config, \
+    get_important_features
 
 ########################################################################################################################
 # Setup
@@ -18,6 +19,10 @@ config = parse_config(sys.argv[1])
 dataset = config['dataset']
 print(f'dataset = {dataset}')
 df = pd.read_csv(PATH + dataset)
+
+model_name = config['model']
+model      = MODELS[model_name]
+print(f'model= {model_name}')
 print('---------------------------------------------------------------------------------------------------------------')
 
 ########################################################################################################################
@@ -54,6 +59,13 @@ y = df['label']
 if config['remove_corr']:
     X = remove_corr(X)
 
+# dimensionality reduction
+top_n = config['top_features']
+if top_n:
+    top_features = get_important_features(X.drop(columns = ['tweet']), y, model(), n = top_n)
+    top_features.append('tweet')
+    X = X[top_features]
+
 ########################################################################################################################
 # numerical columns
 numerical_cols = X.columns.tolist()
@@ -75,8 +87,6 @@ preprocessor = ColumnTransformer(
         ('scaler', StandardScaler(),  numerical_cols)  if config['scale']        else None
     ]
 )
-
-model = MODELS[config['model']]
 
 pipeline = Pipeline([
     ('preprocessor', preprocessor),

@@ -21,9 +21,10 @@
     "c2": "num_rt",
     "op": "div"
   }],
-  "num_exclude": ["polarity"],
+  "num_exclude": [],
   "count_matrix": true,
   "scale": true,
   "remove_corr": true,
-  "score_users": false
+  "score_users": false,
+  "top_features": 5
 }
