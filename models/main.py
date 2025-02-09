@@ -26,10 +26,15 @@ print(f'model = {model_name}')
 print('---------------------------------------------------------------------------------------------------------------')
 
 params = config['params']
+
+doGridSearch = config.get('grid_search', False)
+doLog        = config.get('log', False)
+scaler_name  = config.get('scaler', None)
+top_n        = config.get('top_features', 0)
 ########################################################################################################################
 # Transformations
 # log
-if config.get('log', False):
+if doLog:
     print('Applying log transform')
     log_transformer = FunctionTransformer(log_transform, validate=False)
 
@@ -61,7 +66,6 @@ if config.get('remove_corr', False):
     X = remove_corr(X)
 
 # dimensionality reduction
-top_n = config.get('top_features', 0)
 if top_n:
     top_features = get_important_features(X.drop(columns = ['tweet']), y, model(), n = top_n)
     top_features.append('tweet')
@@ -81,29 +85,29 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random
 
 ########################################################################################################################
 # pipeline
-scaler_name = config.get('scaler', None)
-scaler      = SCALERS.get(scaler_name, None)
+scaler = SCALERS.get(scaler_name, None)
 print(f'scaler = {scaler_name}')
 
 preprocessor = ColumnTransformer(
     transformers=[
         ('text',   CountVectorizer(), 'tweet')        if config.get('count_matrix', False) else None,
-        ('log',    log_transformer,   numerical_cols) if config.get('log', False)          else None,
+        ('log',    log_transformer,   numerical_cols) if doLog                             else None,
         ('scaler', scaler(),          numerical_cols) if scaler_name                       else None
     ]
 )
+# in case of None
 preprocessor.transformers = [t for t in preprocessor.transformers if t is not None]
 
 pipeline = Pipeline([
     ('preprocessor', preprocessor),
-    ('model', model() if config.get('grid_search', False) else model(**config['params']))
+    ('model',        model() if doGridSearch else model(**config['params']))
 ])
 
 print('---------------------------------------------------------------------------------------------------------------')
 
 ########################################################################################################################
 # fit and evaluate
-if config.get('grid_search', False):
+if doGridSearch:
     pipeline = perform_grid_search(pipeline, params, X_train, y_train)
 else:
     pipeline.fit(X_train, y_train)
