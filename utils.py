@@ -1,14 +1,13 @@
 import pandas            as pd
 import networkx          as nx
 import numpy             as np
-import joblib
+import json
 
 from sklearn.metrics         import accuracy_score, roc_auc_score, log_loss, confusion_matrix, classification_report
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from tqdm                    import tqdm
 
 from config import PATH
-
 
 def construct_prop_df(tweet_id):
   propagation_path = PATH + 'tree/' + f'{tweet_id}' + '.txt'
@@ -87,7 +86,8 @@ def remove_corr(df, threshold = 0.9):
       if any(upper_triangle[column] > threshold)
   ]
 
-  print('removed columns:', highly_corr_cols)
+  for c in highly_corr_cols:
+    print('Removed highly correlated:', c)
 
   return df.drop(columns=highly_corr_cols)
 
@@ -195,3 +195,8 @@ def score_users_binary(model, X_test, y_pred, user_stats_file = 'user_stats.csv'
   score_df.to_csv(PATH + 'user_scores.csv')
 
   return None
+
+
+def parse_config(json_file):
+  with open(json_file, "r") as file:
+    return json.load(file)

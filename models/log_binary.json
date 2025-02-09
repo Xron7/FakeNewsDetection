@@ -1,0 +1,25 @@
+{
+  "model": "logistic",
+  "params": {
+    "max_iter": 1000,
+    "random_state": 42
+  },
+  "dataset": "binary.csv",
+  "log": true,
+  "combinations": [{
+    "name": "user_rtXid",
+    "c1": "user_rt",
+    "c2": "user_id",
+    "op": "mult"
+  },{
+    "name": "hashtags2rt",
+    "c1": "num_hashtags",
+    "c2": "num_rt",
+    "op": "div"
+  }],
+  "num_exclude": ["polarity"],
+  "count_matrix": true,
+  "scale": true,
+  "remove_corr": true,
+  "score_users": false
+}

@@ -3,49 +3,66 @@ import sys
 import pandas as pd
 
 from sklearn.model_selection         import train_test_split
-from sklearn.linear_model            import LogisticRegression
 from sklearn.preprocessing           import StandardScaler, FunctionTransformer
 from sklearn.compose                 import ColumnTransformer
 from sklearn.pipeline                import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 
-from config import EXCLUDE_COLUMNS, PATH
-from utils  import log_transform, remove_corr, evaluate_model, add_sentiment_scores, score_users_binary
+from config import EXCLUDE_COLUMNS, PATH, MODELS
+from utils import log_transform, remove_corr, evaluate_model, add_sentiment_scores, score_users_binary, parse_config
 
 ########################################################################################################################
-# custom functions
-log_transformer = FunctionTransformer(log_transform, validate = False)
+# Setup
+config = parse_config(sys.argv[1])
+
+dataset = config['dataset']
+print(f'dataset = {dataset}')
+df = pd.read_csv(PATH + dataset)
+print('---------------------------------------------------------------------------------------------------------------')
 
 ########################################################################################################################
-# read df
-df = pd.read_csv(PATH + sys.argv[1])
+# Transformations
+# log
+if config['log']:
+    print('Applying log transform')
+    log_transformer = FunctionTransformer(log_transform, validate=False)
 
-########################################################################################################################
 # sentiment
+print('Enhancing with sentiment')
 df, sent_cols = add_sentiment_scores(df)
 
-########################################################################################################################
 # combinations
-df['user_rtXid'] = df['user_rt'] * df['user_id']
-df['hashtags2rt'] = df['num_hashtags']/ (df['num_rt'] + 0.0000000001)
+for comb in config['combinations']:
+    op        = comb['op']
+    comb_name = comb['name']
+
+    if op == 'mult':
+        df[comb_name] = df[comb['c1']] * df[comb['c2']]
+
+    elif op == 'div':
+        df[comb_name] = df[comb['c1']] / (df[comb['c2']] + 0.0000000001)
+
+    print(f'Created combination: {comb_name}')
 
 ########################################################################################################################
 # X and y
-EXCLUDE_COLUMNS.remove('tweet_id') # improved the score a bit
 X = df.drop(columns = EXCLUDE_COLUMNS)
 y = df['label']
 
 ########################################################################################################################
-# remove highly correlated
-X = remove_corr(X)
+# correlation
+if config['remove_corr']:
+    X = remove_corr(X)
+
+########################################################################################################################
+# numerical columns
 numerical_cols = X.columns.tolist()
 numerical_cols.remove('tweet')
 
-sent_cols.remove('intensity')
-for c in sent_cols:
+for c in config['num_exclude']:
     numerical_cols.remove(c)
+    print(f'Removed {c} from numerical columns list')
 
-########################################################################################################################
 # split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42)
 
@@ -53,16 +70,20 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random
 # pipeline
 preprocessor = ColumnTransformer(
     transformers=[
-        ('text', CountVectorizer(), 'tweet'),
-        ('log', log_transformer, numerical_cols),
-        ('scaler', StandardScaler(), numerical_cols)
+        ('text',   CountVectorizer(), 'tweet')         if config['count_matrix'] else None,
+        ('log',    log_transformer,   numerical_cols ) if config['log']          else None,
+        ('scaler', StandardScaler(),  numerical_cols)  if config['scale']        else None
     ]
 )
 
+model = MODELS[config['model']]
+
 pipeline = Pipeline([
     ('preprocessor', preprocessor),
-    ('model', LogisticRegression(max_iter=1000, random_state=42))
+    ('model', model(**config['params']))
 ])
+
+print('---------------------------------------------------------------------------------------------------------------')
 
 ########################################################################################################################
 # fit and evaluate
@@ -70,5 +91,6 @@ pipeline.fit(X_train, y_train)
 y_pred = evaluate_model(pipeline, X_test, y_test)
 
 ########################################################################################################################
-# score users
-score_users_binary(pipeline, X_test, y_pred)
+# scoring
+if config['score_users']:
+    score_users_binary(pipeline, X_test, y_pred)
