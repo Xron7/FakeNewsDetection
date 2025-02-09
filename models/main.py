@@ -28,7 +28,7 @@ print('-------------------------------------------------------------------------
 ########################################################################################################################
 # Transformations
 # log
-if config['log']:
+if config.get('log', False):
     print('Applying log transform')
     log_transformer = FunctionTransformer(log_transform, validate=False)
 
@@ -37,7 +37,7 @@ print('Enhancing with sentiment')
 df, sent_cols = add_sentiment_scores(df)
 
 # combinations
-for comb in config['combinations']:
+for comb in config.get('combinations', []):
     op        = comb['op']
     comb_name = comb['name']
 
@@ -56,11 +56,11 @@ y = df['label']
 
 ########################################################################################################################
 # correlation
-if config['remove_corr']:
+if config.get('remove_corr', False):
     X = remove_corr(X)
 
 # dimensionality reduction
-top_n = config['top_features']
+top_n = config.get('top_features', 0)
 if top_n:
     top_features = get_important_features(X.drop(columns = ['tweet']), y, model(), n = top_n)
     top_features.append('tweet')
@@ -71,7 +71,7 @@ if top_n:
 numerical_cols = X.columns.tolist()
 numerical_cols.remove('tweet')
 
-for c in config['num_exclude']:
+for c in config.get('num_exclude', []):
     numerical_cols.remove(c)
     print(f'Removed {c} from numerical columns list')
 
@@ -80,15 +80,15 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random
 
 ########################################################################################################################
 # pipeline
-scaler_name = config['scaler']
+scaler_name = config.get('scaler', None)
 scaler      = SCALERS[scaler_name]
 print(f'scaler = {scaler_name}')
 
 preprocessor = ColumnTransformer(
     transformers=[
-        ('text',   CountVectorizer(), 'tweet')         if config['count_matrix'] else None,
-        ('log',    log_transformer,   numerical_cols ) if config['log']          else None,
-        ('scaler', scaler(),          numerical_cols)  if scaler_name            else None
+        ('text',   CountVectorizer(), 'tweet')        if config.get('count_matrix', False) else None,
+        ('log',    log_transformer,   numerical_cols) if config.get('log', False)          else None,
+        ('scaler', scaler(),          numerical_cols) if scaler_name                       else None
     ]
 )
 preprocessor.transformers = [t for t in preprocessor.transformers if t is not None]
@@ -107,5 +107,5 @@ y_pred = evaluate_model(pipeline, X_test, y_test, mode = config['mode'])
 
 ########################################################################################################################
 # scoring
-if config['score_users']:
+if config.get('score_users', False):
     score_users_binary(pipeline, X_test, y_pred)
