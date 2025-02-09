@@ -19,6 +19,6 @@ so that you can select the venv python from jupyter notebook
 - Fix the prop datasets for classification
 - User clustering
 - Prediction based on user-only features and propagation
-- Leave-one-out for logistic regression
-- logistic regression for multi
-- refactor the rest
+- Leave-one-out for best models
+- refactor the rest into json
+- grid search on mult
