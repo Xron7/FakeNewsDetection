@@ -18,7 +18,5 @@ so that you can select the venv python from jupyter notebook
 - Add the order of the file execution
 - Fix the prop datasets for classification
 - User clustering
-- Prediction based on user-only features and propagation
-- Leave-one-out for best models
-- refactor the rest into json
-- grid search on mult
+- Redo grid search for mult
+- Best features of best models
