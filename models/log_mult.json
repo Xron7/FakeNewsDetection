@@ -1,11 +1,11 @@
 {
-  "mode": "binary",
+  "mode": "multiclass",
   "model": "logistic",
   "params": {
     "max_iter": 1000,
     "random_state": 42
   },
-  "dataset": "binary.csv",
+  "dataset": "dataset.csv",
   "log": true,
   "combinations": [{
     "name": "user_rtXid",

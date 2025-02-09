@@ -116,12 +116,14 @@ def perform_grid_search(pipeline, param_grid, X_train, y_train):
   return grid_search
 
 
-def evaluate_model(model, X_test, y_test):
-  y_pred = model.predict(X_test)
-  y_proba = model.predict_proba(X_test)[:, 1]
+def evaluate_model(model, X_test, y_test, mode):
+  y_pred  = model.predict(X_test)
+  y_proba = model.predict_proba(X_test)
 
   print("Accuracy:", accuracy_score(y_test, y_pred))
-  print("ROC-AUC:", roc_auc_score(y_test, y_proba))
+  if mode == 'binary':
+    print("ROC-AUC:", roc_auc_score(y_test, y_proba[:,1]))
+
   print("Log Loss:", log_loss(y_test, y_proba))
   print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
   print("\nClassification Report:\n", classification_report(y_test, y_pred))
