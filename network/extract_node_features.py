@@ -15,6 +15,7 @@ from config import PATH
 WEIGHTS      = {'true': 1, 'non-rumor': 1, 'unverified': 0, 'false': -1}
 MAX_RT_SCORE = 0.8
 ALPHA        = 1
+
 ########################################################################################################################
 # read datasets
 users_df  = pd.read_csv(PATH + 'user_dataset.csv', index_col=0)
