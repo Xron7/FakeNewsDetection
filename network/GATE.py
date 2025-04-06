@@ -77,18 +77,53 @@ class GATEDecoder(nn.Module):
             h = layer(h, edge_index, attn)
         return h
 
-# --- Demo: Small Graph with 5 nodes ---
-x = torch.randn(5, 4)  # 5 nodes, 4 features each
+class GATEModel(nn.Module):
+    def __init__(self, hidden_dims, lambda_):
+        super().__init__()
+        self.lambda_ = lambda_
+        self.encoder = GATEEncoder(hidden_dims)
+        self.decoder = GATEDecoder(self.encoder)
+
+    def forward(self, x, edge_index, structure_pairs):
+        """
+        structure_pairs: (row, col) indices of edges to reconstruct structure from
+        """
+        # Encode
+        h = self.encoder(x, edge_index)
+
+        # Decode
+        x_recon = self.decoder(h, edge_index)
+
+        # Feature reconstruction loss (L2)
+        feature_loss = torch.norm(x - x_recon, p=2)
+
+        # Structure reconstruction loss (inner product of pairs)
+        row, col = structure_pairs  # same shape as edge_index
+        h_i = h[row]
+        h_j = h[col]
+        dot_product = torch.sum(h_i * h_j, dim=1)
+        structure_loss = -torch.log(torch.sigmoid(dot_product) + 1e-8).sum()
+
+        total_loss = feature_loss + self.lambda_ * structure_loss
+        return total_loss, h, x_recon
+
+
+model = GATEModel(hidden_dims=[4, 8, 2], lambda_=0.5)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+# Dummy graph input
+x = torch.randn(5, 4)
 edge_index = torch.tensor([[0, 1, 2, 3, 4, 1, 2],
-                           [1, 0, 3, 4, 3, 2, 1]])  # COO format
+                           [1, 0, 3, 4, 3, 2, 1]])
 
-# --- Run Encoder and Decoder ---
-encoder = GATEEncoder([4, 8, 2])
-H = encoder(x, edge_index)
+structure_pairs = edge_index  # usually same as edge_index
 
-decoder = GATEDecoder(encoder)
-x_reconstructed = decoder(H, edge_index)
-
-# --- Print ---
-print("Original features:\n", x)
-print("\nReconstructed features:\n", x_reconstructed)
+# Training step
+model.train()
+for epoch in range(100):
+    optimizer.zero_grad()
+    loss, h, x_recon = model(x, edge_index, structure_pairs)
+    loss.backward()
+    optimizer.step()
+    if epoch % 10 == 0:
+        print(f"Epoch {epoch:3d} | Loss: {loss.item():.4f}")
