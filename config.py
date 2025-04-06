@@ -3,7 +3,7 @@ from sklearn.ensemble      import RandomForestClassifier
 from catboost              import CatBoostClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
-PATH            = '../datasets/twitter1516/'
+PATH            = 'datasets/twitter1516/'
 THRESHOLDS      = [0, 5, 30, 60, 180, 480, 720, 1440]
 EXCLUDE_COLUMNS = ['poster', 'label']
 
