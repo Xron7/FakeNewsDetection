@@ -8,3 +8,5 @@ notebook
 emoji
 prettytable
 catboost
+torch
+torch_geometric
