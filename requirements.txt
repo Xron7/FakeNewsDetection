@@ -10,3 +10,4 @@ prettytable
 catboost
 torch
 torch_geometric
+igraph
