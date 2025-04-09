@@ -1,24 +1,55 @@
 import sys
 import torch
 import matplotlib.pyplot as plt
+import pandas            as pd
 
 from network.GATE import GATEModel
 from utils        import parse_config
+from config       import PATH
+
+########################################################################################################################
+# Init
 
 config = parse_config(sys.argv[1])
+
 hidden_dims = config["hidden_dims"]
 lambda_     = config["lambda_"]
 lr          = config["lr"]
 epochs      = config["epochs"]
 
-model     = GATEModel(hidden_dims = hidden_dims, lambda_ = lambda_)
-optimizer = torch.optim.Adam(model.parameters(), lr = lr)
+########################################################################################################################
+# Data
 
 if config["use_dummy"]:
     x = torch.randn(5, 4)
     edge_index = torch.tensor([[0, 1, 2, 3, 4, 1, 2],
                             [1, 0, 3, 4, 3, 2, 1]])
     structure_pairs = edge_index
+else:
+    # edges
+    df_G = pd.read_csv('network/network.csv', header = None)
+    df_G.columns = ['source', 'target', 'weight']
+
+    # features
+    df_nodes = pd.read_csv(PATH +'node_features.csv')
+    df_nodes.drop(columns=['score'], inplace = True)
+
+    # they need to increment from 0
+    nodes = df_nodes['user_id'].tolist()
+    node2idx = {node: idx for idx, node in enumerate(nodes)}
+
+    # tensors
+    x          = torch.tensor(df_nodes.values, dtype=torch.float)
+    edge_index = torch.tensor([[node2idx[src] for src in df_G["source"]],
+                               [node2idx[tgt] for tgt in df_G["target"]]], dtype=torch.long)
+    structure_pairs = edge_index
+
+########################################################################################################################
+# Train Loop
+dims = [df_nodes.shape[1]] + hidden_dims
+
+model     = GATEModel(hidden_dims = dims, lambda_ = lambda_)
+optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
 losses = []
 
@@ -33,6 +64,9 @@ for epoch in range(epochs):
 
     if epoch % 10 == 0:
         print(f"Epoch {epoch:3d} | Loss: {loss.item():.4f}")
+
+########################################################################################################################
+# Plotting
 
 plt.figure(figsize=(8, 5))
 plt.plot(losses, label="Structure Loss", linewidth=2)
