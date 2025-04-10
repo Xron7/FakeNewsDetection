@@ -37,6 +37,7 @@ else:
     # they need to increment from 0
     nodes = df_nodes['user_id'].tolist()
     node2idx = {node: idx for idx, node in enumerate(nodes)}
+    df_nodes.drop(columns=['user_id'], inplace = True)
 
     # tensors
     x          = torch.tensor(df_nodes.values, dtype=torch.float)
