@@ -2,6 +2,9 @@ import sys
 import torch
 import matplotlib.pyplot as plt
 import pandas            as pd
+import numpy             as np
+
+from sklearn.preprocessing import MinMaxScaler
 
 from network.GATE import GATEModel
 from utils        import parse_config
@@ -34,13 +37,32 @@ else:
     df_nodes = pd.read_csv(PATH +'node_features.csv')
     df_nodes.drop(columns=['score'], inplace = True)
 
+    # remove single retweets
+    num_nodes = df_nodes.shape[0]
+
+    mask = ~((df_nodes['num_post'] == 0) & (df_nodes['user_rt'] == 1))
+    df_nodes = df_nodes[mask].reset_index(drop=True)
+    print('Removing single retweeters:')
+    print(f'Removed {num_nodes - df_nodes.shape[0]} nodes')
+    print('----------------------------------------------------------------------------------------------')
+
+    valid_nodes = df_nodes.loc[mask, 'user_id'].tolist()
+    df_G = df_G[df_G['source'].isin(valid_nodes) & df_G['target'].isin(valid_nodes)].reset_index(drop=True)
+
     # they need to increment from 0
     nodes = df_nodes['user_id'].tolist()
     node2idx = {node: idx for idx, node in enumerate(nodes)}
     df_nodes.drop(columns=['user_id'], inplace = True)
 
+    # log
+    # df_nodes= np.log1p(df_nodes)
+
+    # scale
+    scaler = MinMaxScaler()
+    df_nodes = scaler.fit_transform(df_nodes)
+
     # tensors
-    x          = torch.tensor(df_nodes.values, dtype=torch.float)
+    x          = torch.tensor(df_nodes, dtype=torch.float)
     edge_index = torch.tensor([[node2idx[src] for src in df_G["source"]],
                                [node2idx[tgt] for tgt in df_G["target"]]], dtype=torch.long)
     structure_pairs = edge_index
