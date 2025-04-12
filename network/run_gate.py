@@ -7,7 +7,7 @@ import numpy             as np
 from sklearn.preprocessing import MinMaxScaler
 
 from network.GATE import GATEModel
-from utils        import parse_config
+from utils        import parse_config, log_transform
 from config       import PATH
 
 ########################################################################################################################
@@ -15,10 +15,11 @@ from config       import PATH
 
 config = parse_config(sys.argv[1])
 
-hidden_dims = config["hidden_dims"]
-lambda_     = config["lambda_"]
-lr          = config["lr"]
-epochs      = config["epochs"]
+hidden_dims      = config["hidden_dims"]
+lambda_          = config["lambda_"]
+lr               = config["lr"]
+epochs           = config["epochs"]
+remove_rt_thresh = config["remove_rt_thresh"]
 
 ########################################################################################################################
 # Data
@@ -30,24 +31,28 @@ if config["use_dummy"]:
     structure_pairs = edge_index
 else:
     # edges
-    df_G = pd.read_csv('network/network.csv', header = None)
+    df_G = pd.read_csv(PATH + 'network.csv', header = None)
     df_G.columns = ['source', 'target', 'weight']
 
     # features
     df_nodes = pd.read_csv(PATH +'node_features.csv')
     df_nodes.drop(columns=['score'], inplace = True)
 
-    # remove single retweets
-    num_nodes = df_nodes.shape[0]
+    # remove few retweets
+    if remove_rt_thresh:
+        num_nodes = df_nodes.shape[0]
 
-    mask = ~((df_nodes['num_post'] == 0) & (df_nodes['user_rt'] == 1))
-    df_nodes = df_nodes[mask].reset_index(drop=True)
-    print('Removing single retweeters:')
-    print(f'Removed {num_nodes - df_nodes.shape[0]} nodes')
-    print('----------------------------------------------------------------------------------------------')
+        mask = ~((df_nodes['num_post'] == 0) & (df_nodes['user_rt'] <= remove_rt_thresh))
+        df_nodes = df_nodes[mask].reset_index(drop=True)
 
-    valid_nodes = df_nodes.loc[mask, 'user_id'].tolist()
-    df_G = df_G[df_G['source'].isin(valid_nodes) & df_G['target'].isin(valid_nodes)].reset_index(drop=True)
+        removed_percent = (num_nodes - df_nodes.shape[0]) / num_nodes * 100
+
+        print('Removing single retweeters:')
+        print(f'Removed {num_nodes - df_nodes.shape[0]} nodes ({removed_percent:.2f}%)')
+        print('----------------------------------------------------------------------------------------------')
+
+        valid_nodes = df_nodes.loc[mask, 'user_id'].tolist()
+        df_G = df_G[df_G['source'].isin(valid_nodes) & df_G['target'].isin(valid_nodes)].reset_index(drop=True)
 
     # they need to increment from 0
     nodes = df_nodes['user_id'].tolist()
@@ -55,11 +60,13 @@ else:
     df_nodes.drop(columns=['user_id'], inplace = True)
 
     # log
-    # df_nodes= np.log1p(df_nodes)
+    if config["log"]:
+        df_nodes= log_transform(df_nodes)
 
     # scale
-    scaler = MinMaxScaler()
-    df_nodes = scaler.fit_transform(df_nodes)
+    if config["scale"]:
+        scaler = MinMaxScaler()
+        df_nodes = scaler.fit_transform(df_nodes)
 
     # tensors
     x          = torch.tensor(df_nodes, dtype=torch.float)
