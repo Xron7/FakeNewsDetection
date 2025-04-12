@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas            as pd
 import numpy             as np
 
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 from network.GATE import GATEModel
 from utils        import parse_config, log_transform
@@ -20,6 +20,7 @@ lambda_          = config["lambda_"]
 lr               = config["lr"]
 epochs           = config["epochs"]
 remove_rt_thresh = config["remove_rt_thresh"]
+scale            = config["scale"]
 
 ########################################################################################################################
 # Data
@@ -64,9 +65,14 @@ else:
         df_nodes= log_transform(df_nodes)
 
     # scale
-    if config["scale"]:
+    if config["scale"] == "minmax":
         scaler = MinMaxScaler()
         df_nodes = scaler.fit_transform(df_nodes)
+    elif config["scale"] == "standard":
+        scaler = StandardScaler()
+        df_nodes = scaler.fit_transform(df_nodes)
+    else:
+        df_nodes = df_nodes.values
 
     # tensors
     x          = torch.tensor(df_nodes, dtype=torch.float)
@@ -96,6 +102,13 @@ for epoch in range(epochs):
         print(f"Epoch {epoch:3d} | Loss: {loss.item():.4f}")
 
 ########################################################################################################################
+# Validation
+
+print('----------------------------------------------------------------------------------------------')
+print("x mean/std:", x.mean().item(), x.std().item())
+print("x_recon mean/std:", x_recon.mean().item(), x_recon.std().item())
+
+########################################################################################################################
 # Plotting
 
 plt.figure(figsize=(8, 5))
@@ -114,4 +127,4 @@ plt.plot([], [], ' ', label=params_str)
 plt.legend()
 plt.grid(True)
 
-plt.savefig(f"{lambda_}_{lr}_{epochs}_{hidden_dims}.png", dpi=300)
+plt.savefig(f"{lambda_}_{lr}_{epochs}_{dims}.png", dpi=300)

@@ -1,5 +1,6 @@
 import torch
-import torch.nn as nn
+import torch.nn            as nn
+import torch.nn.functional as F
 
 from torch_geometric.utils import softmax
 
@@ -59,14 +60,15 @@ class GATEDecoderLayer(nn.Module):
         self.out_dim       = out_dim
 
     def forward(self, h, edge_index, attn):
-        h = h @ self.W_T
+        h = h @ self.W_T 
+        # h = F.relu(h @ self.W_T)
 
         row, col = edge_index
 
         out = torch.zeros(h.size(0), self.out_dim, device=h.device)
         out.index_add_(0, row, h[col] * attn.unsqueeze(-1))
 
-        return out
+        return out + h
 
 
 class GATEDecoder(nn.Module):
@@ -99,8 +101,11 @@ class GATEModel(nn.Module):
         h       = self.encoder(x, edge_index)
         x_recon = self.decoder(h, edge_index)
 
-        # Feature reconstruction loss (L2)
-        feature_loss = torch.norm(x - x_recon, p=2)
+        # Loss functions
+        # feature_loss = torch.norm(x - x_recon, p=2)
+        mse_loss_fn = nn.MSELoss()
+        feature_loss = mse_loss_fn(x_recon, x)
+
 
         # Structure reconstruction loss (inner product of pairs)
         row, col = structure_pairs
