@@ -4,6 +4,8 @@ import torch.nn.functional as F
 
 from torch_geometric.utils import softmax
 
+from utils import calculate_feature_loss, calculate_structure_loss
+
 class GATEAttentionLayer(nn.Module):
     def __init__(self, in_dim, out_dim):
         super().__init__()
@@ -102,18 +104,10 @@ class GATEModel(nn.Module):
         x_recon = self.decoder(h, edge_index)
 
         # Loss functions
-        # feature_loss = torch.norm(x - x_recon, p=2)
-        mse_loss_fn = nn.MSELoss()
-        feature_loss = mse_loss_fn(x_recon, x)
+        feature_loss = calculate_feature_loss(x, x_recon)
 
-
-        # Structure reconstruction loss (inner product of pairs)
-        row, col = structure_pairs
-        h_i = h[row]
-        h_j = h[col]
-
-        dot_product    = torch.sum(h_i * h_j, dim=1)
-        structure_loss = -torch.log(torch.sigmoid(dot_product) + 1e-8).sum()
+        # Structure reconstruction loss
+        structure_loss = calculate_structure_loss(h, structure_pairs)
 
         total_loss = feature_loss + self.lambda_ * structure_loss
 

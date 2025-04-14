@@ -1,7 +1,10 @@
 import pandas            as pd
 import networkx          as nx
 import numpy             as np
+import torch.nn          as nn
+import matplotlib.pyplot as plt
 import json
+import torch
 
 from sklearn.metrics         import accuracy_score, roc_auc_score, log_loss, confusion_matrix, classification_report
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
@@ -202,3 +205,39 @@ def score_users_binary(model, X_test, y_pred, user_stats_file = 'user_stats.csv'
 def parse_config(json_file):
   with open(json_file, "r") as file:
     return json.load(file)
+
+
+def calculate_feature_loss(x, x_recon):
+  # feature_loss = torch.norm(x - x_recon, p=2)
+  mse_loss_fn = nn.MSELoss()
+  return mse_loss_fn(x_recon, x)
+
+
+def calculate_structure_loss(h, structure_pairs):
+  row, col = structure_pairs
+  h_i = h[row]
+  h_j = h[col]
+
+  dot_product = torch.sum(h_i * h_j, dim=1)
+  return -torch.log(torch.sigmoid(dot_product) + 1e-8).sum()
+
+def plot_loss(losses, type, lambda_, lr, epochs, dims):
+  plt.figure(figsize=(8, 5))
+  plt.plot(losses, label=f"{type} Loss", linewidth=2)
+  plt.xlabel("Epoch")
+  plt.ylabel("Loss")
+  plt.title("GATE Training Loss Curve")
+  params_str = f"λ={'d'}, epochs = {epochs}"
+  params_str = (
+      f"λ = {lambda_}\n"
+      f"lr = {lr}\n"
+      f"epochs = {epochs}\n"
+      f"dims = {dims}\n"
+  )
+  plt.plot([], [], ' ', label=params_str)
+  plt.legend()
+  plt.grid(True)
+
+  plt.savefig(f"plots/{type}_{lambda_}_{lr}_{epochs}_{dims}.png", dpi=300)
+
+  return None

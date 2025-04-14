@@ -1,5 +1,6 @@
 import sys
 import torch
+import random
 import matplotlib.pyplot as plt
 import pandas            as pd
 import numpy             as np
@@ -7,11 +8,16 @@ import numpy             as np
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
 from network.GATE import GATEModel
-from utils        import parse_config, log_transform
+from utils        import parse_config, log_transform, calculate_feature_loss, calculate_structure_loss, plot_loss
 from config       import PATH
 
 ########################################################################################################################
 # Init
+
+seed = 42
+torch.manual_seed(seed)
+np.random.seed(seed)
+# random.seed(seed)
 
 config = parse_config(sys.argv[1])
 
@@ -87,7 +93,9 @@ dims = [df_nodes.shape[1]] + hidden_dims
 model     = GATEModel(hidden_dims = dims, lambda_ = lambda_)
 optimizer = torch.optim.Adam(model.parameters(), lr = lr)
 
-losses = []
+losses           = []
+feature_losses   = []
+structure_losses = []
 
 model.train()
 for epoch in range(epochs):
@@ -97,6 +105,8 @@ for epoch in range(epochs):
     optimizer.step()
 
     losses.append(loss.item())
+    feature_losses.append(calculate_feature_loss(x, x_recon).item())
+    structure_losses.append(calculate_structure_loss(h, structure_pairs).item())
 
     if epoch % 10 == 0:
         print(f"Epoch {epoch:3d} | Loss: {loss.item():.4f}")
@@ -111,20 +121,6 @@ print("x_recon mean/std:", x_recon.mean().item(), x_recon.std().item())
 ########################################################################################################################
 # Plotting
 
-plt.figure(figsize=(8, 5))
-plt.plot(losses, label="Structure Loss", linewidth=2)
-plt.xlabel("Epoch")
-plt.ylabel("Loss")
-plt.title("GATE Training Loss Curve")
-params_str = f"λ={'d'}, epochs = {epochs}"
-params_str = (
-    f"λ = {lambda_}\n"
-    f"lr = {lr}\n"
-    f"epochs = {epochs}\n"
-    f"dims = {hidden_dims}\n"
-)
-plt.plot([], [], ' ', label=params_str)
-plt.legend()
-plt.grid(True)
-
-plt.savefig(f"{lambda_}_{lr}_{epochs}_{dims}.png", dpi=300)
+plot_loss(losses, "Total", lambda_, lr, epochs, dims)
+plot_loss(feature_losses, "Feature", lambda_, lr, epochs, dims)
+plot_loss(structure_losses, "Structure", lambda_, lr, epochs, dims)
