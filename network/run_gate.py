@@ -117,6 +117,9 @@ for epoch in range(epochs):
 print('----------------------------------------------------------------------------------------------')
 print("x mean/std:", x.mean().item(), x.std().item())
 print("x_recon mean/std:", x_recon.mean().item(), x_recon.std().item())
+print("h mean/std:", h.mean().item(), h.std().item())
+num_zeros = torch.sum(h == 0).item()
+print(f"{num_zeros}/{h.numel()} elements are zero")
 
 ########################################################################################################################
 # Plotting
