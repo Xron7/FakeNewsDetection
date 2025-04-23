@@ -1,7 +1,5 @@
 import sys
 import torch
-import random
-import matplotlib.pyplot as plt
 import pandas            as pd
 import numpy             as np
 
@@ -17,7 +15,6 @@ from config       import PATH
 seed = 42
 torch.manual_seed(seed)
 np.random.seed(seed)
-# random.seed(seed)
 
 config = parse_config(sys.argv[1])
 
@@ -104,12 +101,15 @@ for epoch in range(epochs):
     loss.backward()
     optimizer.step()
 
-    losses.append(loss.item())
-    feature_losses.append(calculate_feature_loss(x, x_recon).item())
-    structure_losses.append(calculate_structure_loss(h, structure_pairs).item())
+    total_loss     = loss.item()
+    feature_loss   = calculate_feature_loss(x, x_recon).item()
+    structure_loss = calculate_structure_loss(h, structure_pairs).item()
+    losses.append(total_loss)
+    feature_losses.append(feature_loss)
+    structure_losses.append(structure_loss)
 
     if epoch % 10 == 0:
-        print(f"Epoch {epoch:3d} | Loss: {loss.item():.4f}")
+        print(f"Epoch {epoch:3d} | Loss: {total_loss:12.4f} | Feature Loss: {feature_loss:12.4f} | Structure Loss: {structure_loss:12.4f}")
 
 ########################################################################################################################
 # Validation
