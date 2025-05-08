@@ -33,6 +33,8 @@ if config["use_dummy"]:
     edge_index = torch.tensor([[0, 1, 2, 3, 4, 1, 2],
                             [1, 0, 3, 4, 3, 2, 1]])
     structure_pairs = edge_index
+
+    input_dim = 4
 else:
     # edges
     df_G = pd.read_csv(PATH + 'network.csv', header = None)
@@ -83,9 +85,11 @@ else:
                                [node2idx[tgt] for tgt in df_G["target"]]], dtype=torch.long)
     structure_pairs = edge_index
 
+    input_dim = df_nodes.shape[1]
+
 ########################################################################################################################
 # Train Loop
-dims = [df_nodes.shape[1]] + hidden_dims
+dims = [input_dim] + hidden_dims
 
 model     = GATEModel(hidden_dims = dims, lambda_ = lambda_)
 optimizer = torch.optim.Adam(model.parameters(), lr = lr)
