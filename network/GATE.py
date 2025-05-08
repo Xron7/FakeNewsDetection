@@ -63,8 +63,7 @@ class GATEDecoderLayer(nn.Module):
         self.out_dim       = out_dim
 
     def forward(self, h, edge_index, attn):
-        h = h @ self.W_T 
-        # h = F.relu(h @ self.W_T)
+        h = h @ self.W_T
 
         row, col = edge_index
 

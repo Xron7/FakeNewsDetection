@@ -131,3 +131,12 @@ print(f"{num_zeros}/{h.numel()} elements are zero")
 plot_loss(losses, "Total", lambda_, lr, epochs, dims)
 plot_loss(feature_losses, "Feature", lambda_, lr, epochs, dims)
 plot_loss(structure_losses, "Structure", lambda_, lr, epochs, dims)
+
+########################################################################################################################
+# Save the embeddings
+idx2node = {idx: node for node, idx in node2idx.items()}
+col_names = [f"emb_{i}" for i in range(input_dim)]
+
+embeddings_df = pd.DataFrame(h.detach().cpu().numpy(), columns=col_names)
+embeddings_df["user_id"] = embeddings_df.index.map(idx2node)
+embeddings_df.to_csv(PATH + "node_embeddings.csv", index=False)
