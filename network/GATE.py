@@ -1,6 +1,5 @@
 import torch
 import torch.nn            as nn
-import torch.nn.functional as F
 
 from torch_geometric.utils import softmax
 
@@ -20,8 +19,7 @@ class GATEAttentionLayer(nn.Module):
         nn.init.xavier_uniform_(self.v1)
 
     def forward(self, x, edge_index):
-        # h       = self.W(x)
-        h       = F.leaky_relu(self.W(x), negative_slope=0.2)
+        h       = self.W(x)
         alpha_0 = (h @ self.v0).squeeze(-1)
         alpha_1 = (h @ self.v1).squeeze(-1)
 
