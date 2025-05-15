@@ -161,7 +161,7 @@ def get_retweet_stats(tweet_id):
   return prop_df[['retweeter_id', 'time_elapsed']]
 
 
-def score_users_binary(model, X_test, y_pred, user_stats_file = 'user_stats.csv', max_rt_score = 0.8, alpha = 1):
+def score_users_binary(X_test, y_pred, user_stats_file = 'user_stats.csv', max_rt_score = 0.8, alpha = 1):
   flag      = 'tested'
   score_col = 'score'
 
@@ -175,7 +175,7 @@ def score_users_binary(model, X_test, y_pred, user_stats_file = 'user_stats.csv'
   user_stats_df[score_col] = 0.0
   user_stats_df[flag]      = 0
 
-  for i, (x, y) in tqdm(enumerate(zip(X_test.iterrows(), y_pred))):
+  for _, (x, y) in tqdm(enumerate(zip(X_test.iterrows(), y_pred))):
 
     poster   = x[1]['user_id']
     tweet_id = x[1]['tweet_id']
@@ -185,7 +185,7 @@ def score_users_binary(model, X_test, y_pred, user_stats_file = 'user_stats.csv'
 
     # retweeter scoring
     retweet_df = get_retweet_stats(tweet_id)
-    for j, rt in retweet_df.iterrows():
+    for _, rt in retweet_df.iterrows():
       rter = rt['retweeter_id']
       t    = rt['time_elapsed']
 
