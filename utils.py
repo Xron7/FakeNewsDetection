@@ -173,7 +173,7 @@ def score_users_binary(X_test, y_pred, user_stats_file = 'user_stats.csv', max_r
     user_stats_df = pd.read_csv(PATH + user_stats_file, index_col = 0)
 
     user_stats_df[score_col] = 0.0
-    user_stats_df[flag]            = 0
+    user_stats_df[flag]      = 0
 
     for _, (x, y) in tqdm(enumerate(zip(X_test.iterrows(), y_pred))):
 
