@@ -20,16 +20,35 @@ def construct_prop_df(tweet_id):
     times      = []
     rt_times   = []
     with open(propagation_path, 'r') as file:
+
+        # first line for the poster
+        first_line = file.readline().strip()
+        root, first_retweet = first_line.split('->')
+
+        root = eval(root)
+        first_retweet = eval(first_retweet)
+
+        # check if there is time error
+        time_shift = 0
+        if root[0]!= 'ROOT':
+            print(f'Detected time issue for {propagation_path}')
+            time_shift = -1 * float(root[2])
+            sources.append(root[0])
+            retweeters.append(first_retweet[0])
+            rt_times.append(round(float(first_retweet[2]) - float(root[2]) + time_shift, 2))
+            times.append(float(first_retweet[2])+ time_shift)
+
         for _, line in enumerate(file):
 
             source, retweet = line.split('->')
             source  = eval(source)
             retweet = eval(retweet)
 
-            sources.append(source[0])
-            retweeters.append(retweet[0])
-            rt_times.append(max(0, float(retweet[2]) - float(source[2]))) # max for handling retweet circles
-            times.append(float(retweet[2]))
+            if source[0]!='ROOT':
+                sources.append(source[0])
+                retweeters.append(retweet[0])
+                rt_times.append(round(float(retweet[2]) - float(source[2]) + time_shift, 2))
+                times.append(float(retweet[2])+ time_shift)
 
         propagation_df = pd.DataFrame({
         'source':       sources,

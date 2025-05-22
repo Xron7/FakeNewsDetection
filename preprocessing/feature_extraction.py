@@ -41,7 +41,7 @@ def prop_data_pipeline(tweet_id):
 
   prop_df = construct_prop_df(tweet_id)
 
-  uid = prop_df['retweeter_id'][0]
+  uid = prop_df['source'][0]
 
   prop_df = prop_df.iloc[1:] # exclude original post
 
