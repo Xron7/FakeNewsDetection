@@ -16,6 +16,7 @@ with open(sys.argv[1], "r") as f:
 
 tweet_df = pd.read_csv(PATH + "dataset_enhanced.csv")
 posters = tweet_df["poster"].values.tolist()
+
 ########################################################################################################################
 # Remove nodes and the nodes that depend on them
 
@@ -34,3 +35,12 @@ while True:
     G.remove_nodes_from(no_incoming)
 
 print(f'{total_nodes_removed}/{num_nodes_og} nodes removed')
+
+remaining_nodes = G.nodes
+
+reachabilities = {"true": 0, "false": 0, "unverified": 0, "non-rumor": 0}
+for tweet in tweet_df.itertuples():
+    print(tweet.tweet_id)
+    print(tweet.poster)
+    print(tweet.label)
+    break
