@@ -12,7 +12,7 @@ from tqdm                    import tqdm
 
 from config import PATH
 
-def construct_prop_df(tweet_id):
+def construct_prop_df(tweet_id, logging = True):
     propagation_path = PATH + 'tree/' + f'{tweet_id}' + '.txt'
 
     sources    = []
@@ -31,7 +31,8 @@ def construct_prop_df(tweet_id):
         # check if there is time error
         time_shift = 0
         if root[0]!= 'ROOT':
-            print(f'Detected time issue for {propagation_path}')
+            if logging:
+                print(f'Detected time issue for {propagation_path}')
             time_shift = -1 * float(root[2])
             sources.append(root[0])
             retweeters.append(first_retweet[0])
