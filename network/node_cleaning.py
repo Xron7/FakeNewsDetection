@@ -40,30 +40,23 @@ print('---------------------------------------------------------------')
 ########################################################################################################################
 # Compare reachability before and after
 total_rts = tweet_df.groupby("label").num_rt.sum().to_dict()
-print(f'Total retweets: {total_rts}')
 
 reachabilities = {"true": 0, "false": 0, "unverified": 0, "non-rumor": 0}
 for tweet in tqdm(tweet_df.itertuples(), desc="Computing reachability"):
     label    = tweet.label
-    print(tweet.tweet_id)
-    print(tweet.poster)
-    print(tweet.num_rt)
-    print(tweet.label)
+    tweet_id = tweet.tweet_id
     
     if tweet.poster in nodes_removed:
         reachabilities[label] += 0
-        print('mpika')
+        print('\nRemoved poster of tweet:', tweet_id)
         continue
 
-    prop_df = construct_prop_df(tweet.tweet_id, logging=False)
-    print(f'shape of prop_df: {prop_df.shape}')
-    prop_df = prop_df[~(prop_df.source.isin(nodes_removed) | prop_df.retweeter_id.isin(nodes_removed))]
-    print(f'shape of prop_df: {prop_df.shape}')
+    prop_df = construct_prop_df(tweet_id, logging=False)
+    nodes_removed_str = {str(x) for x in nodes_removed}
+    prop_df = prop_df[~(prop_df.source.isin(nodes_removed_str) | prop_df.retweeter_id.isin(nodes_removed_str))]
     reachabilities[label] += prop_df.shape[0]
-    break
-
-
-print(f'Reachabilities before node removal: {reachabilities}')
 
 reachabilities = {k: reachabilities[k] / total_rts[k] for k in reachabilities}
-print(reachabilities)
+print('Reachability after node removal:')
+for l, r in reachabilities.items():
+    print(f'{l}: {r:.4f}')

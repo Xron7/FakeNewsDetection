@@ -56,7 +56,7 @@ def construct_prop_df(tweet_id, logging = True):
         'retweeter_id': retweeters,
         'time_elapsed': times,
         'time_rt':      rt_times
-})
+        })
         return propagation_df
 
 
