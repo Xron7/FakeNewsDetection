@@ -32,7 +32,7 @@ def construct_prop_df(tweet_id, logging = True):
         time_shift = 0
         if root[0]!= 'ROOT':
             if logging:
-                print(f'Detected time issue for {propagation_path}')
+                print(f'\nDetected time issue for {propagation_path}')
             time_shift = -1 * float(root[2])
             sources.append(root[0])
             retweeters.append(first_retweet[0])
