@@ -48,7 +48,6 @@ for tweet in tqdm(tweet_df.itertuples(), desc="Computing reachability"):
     
     if tweet.poster in nodes_removed:
         reachabilities[label] += 0
-        print('\nRemoved poster of tweet:', tweet_id)
         continue
 
     prop_df = construct_prop_df(tweet_id, logging=False)
