@@ -262,3 +262,15 @@ def plot_loss(losses, type, lambda_, lr, epochs, dims):
     plt.savefig(f"plots/{type}_{lambda_}_{lr}_{epochs}_{dims}.png", dpi=300)
 
     return None
+
+def plot_after_cleaning(data, title, metric):
+    plt.figure(figsize=(8, 5))
+    plt.plot(data, linewidth=2)
+    plt.xlabel("# users removed")
+    plt.ylabel(f"{metric}")
+    plt.title(f"{title}: {metric} vs # users removed")
+    plt.grid(True)
+
+    plt.savefig(f"plots/{title}_{metric}.png", dpi=300)
+
+    return None
