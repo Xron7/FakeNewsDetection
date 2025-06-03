@@ -34,7 +34,8 @@ while True:
 
     G.remove_nodes_from(no_incoming)
 
-print(f'{len(nodes_removed)}/{num_nodes_og} nodes removed')
+num_removed = len(nodes_removed)
+print(f'{num_removed} nodes removed ({100*num_removed/num_nodes_og:.4f}%)')
 print('---------------------------------------------------------------')
 
 ########################################################################################################################
