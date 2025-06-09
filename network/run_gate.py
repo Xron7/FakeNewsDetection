@@ -16,12 +16,13 @@ from utils import (
 from config import PATH
 
 ########################################################################################################################
-# Init
+# Setup
 
 seed = 42
 torch.manual_seed(seed)
 np.random.seed(seed)
 
+title = sys.argv[1]
 config = parse_config(sys.argv[2])
 
 hidden_dims = config["hidden_dims"]
@@ -42,12 +43,12 @@ if config["use_dummy"]:
     input_dim = 4
 else:
     # edges
-    df_G = pd.read_csv(PATH + sys.argv[1], header=None)
+    df_G = pd.read_csv(PATH + f"/{title}_network.csv", header=None)
     df_G = df_G.iloc[:, :2]
     df_G.columns = ["source", "target"]
 
     # features
-    df_nodes = pd.read_csv(PATH + "node_features.csv")
+    df_nodes = pd.read_csv(PATH + f"/{title}_node_features.csv")
     df_nodes.drop(columns=["score"], inplace=True)
 
     # remove few retweets
@@ -149,9 +150,9 @@ print(f"{num_zeros}/{h.numel()} elements are zero")
 ########################################################################################################################
 # Plotting
 
-plot_loss(losses, "Total", lambda_, lr, epochs, dims)
-plot_loss(feature_losses, "Feature", lambda_, lr, epochs, dims)
-plot_loss(structure_losses, "Structure", lambda_, lr, epochs, dims)
+plot_loss(losses, f"{title}_Total", lambda_, lr, epochs, dims)
+plot_loss(feature_losses, f"{title}_Feature", lambda_, lr, epochs, dims)
+plot_loss(structure_losses, f"{title}_Structure", lambda_, lr, epochs, dims)
 
 ########################################################################################################################
 # Save the embeddings
@@ -160,4 +161,4 @@ col_names = [f"emb_{i}" for i in range(input_dim)]
 
 embeddings_df = pd.DataFrame(h.detach().cpu().numpy(), columns=col_names)
 embeddings_df["user_id"] = embeddings_df.index.map(idx2node)
-embeddings_df.to_csv(PATH + "node_embeddings.csv", index=False)
+embeddings_df.to_csv(PATH + f"/{title}_node_embeddings.csv", index=False)

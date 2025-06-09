@@ -1,28 +1,50 @@
+"""
+Removes the nodes from the network and calculates the reachability.
+arg1: the network title e.g. real
+arg2: the nodes to remove
+"""
+
 import sys
 import networkx as nx
 import pandas as pd
-
 from tqdm import tqdm
 
 from config import PATH
-from utils import construct_prop_df
+
+
+def count_retweets_per_label(G):
+    labels = ["true", "false", "unverified", "non-rumor"]
+    total_rts = {label: 0 for label in labels}
+    for _, _, data in tqdm(G.edges(data=True), desc="Counting Retweets per Label"):
+        label = data["label"]
+        total_rts[label] += 1
+    return total_rts
+
+
+title = sys.argv[1]
 
 ########################################################################################################################
 # Read Inputs
 G = nx.DiGraph()
 G = nx.read_edgelist(
-    PATH + sys.argv[1],
+    PATH + f"/{title}_network.csv",
     delimiter=",",
     nodetype=int,
-    data=(("weight", float),),
+    data=(
+        ("label", str),
+        ("weight", float),
+    ),
     create_using=nx.DiGraph(),
 )
 
 with open(sys.argv[2], "r") as f:
     nodes_to_remove = [int(line.strip()) for line in f if line.strip()]
+nodes_to_remove = nodes_to_remove[:1000]  # limit to 1000 nodes for performance
+features_df = pd.read_csv(PATH + f"/{title}_node_features.csv")
+posters = features_df[features_df["num_post"] != 0]["user_id"].tolist()
 
-tweet_df = pd.read_csv(PATH + "dataset_enhanced.csv")
-posters = tweet_df.poster.tolist()
+# total retweets per label
+total_rts = count_retweets_per_label(G)
 
 ########################################################################################################################
 # Remove nodes and the nodes that depend on them
@@ -44,29 +66,11 @@ print(f"{num_removed} nodes removed ({100 * num_removed / num_nodes_og:.4f}%)")
 print("---------------------------------------------------------------")
 
 ########################################################################################################################
-# Compare reachability before and after
-total_rts = tweet_df.groupby("label").num_rt.sum().to_dict()
+# Calculate reachability after cleaning
 
-reachabilities = {"true": 0, "false": 0, "unverified": 0, "non-rumor": 0}
-for tweet in tqdm(tweet_df.itertuples(), desc="Computing reachability"):
-    label = tweet.label
-    tweet_id = tweet.tweet_id
-
-    if tweet.poster in nodes_removed:
-        reachabilities[label] += 0
-        continue
-
-    prop_df = construct_prop_df(tweet_id, logging=False)
-    nodes_removed_str = {str(x) for x in nodes_removed}
-    prop_df = prop_df[
-        ~(
-            prop_df.source.isin(nodes_removed_str)
-            | prop_df.retweeter_id.isin(nodes_removed_str)
-        )
-    ]
-    reachabilities[label] += prop_df.shape[0]
+reachabilities = count_retweets_per_label(G)
 
 reachabilities = {k: reachabilities[k] / total_rts[k] for k in reachabilities}
 print("Reachability after node removal:")
-for l, r in reachabilities.items():
-    print(f"{l}: {r:.4f}")
+for label, r in reachabilities.items():
+    print(f"{label}: {r:.4f}")

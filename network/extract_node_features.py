@@ -24,8 +24,8 @@ types = ["post", "rt"]
 labels = tweets_df["label"].unique()
 
 for t in types:
-    for l in labels:
-        users_df[f"num_{t}_{l}"] = 0
+    for label in labels:
+        users_df[f"num_{t}_{label}"] = 0
 
 users_df["score"] = 0.0
 users_df["rt_total"] = 0

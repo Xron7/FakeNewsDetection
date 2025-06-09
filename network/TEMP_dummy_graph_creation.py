@@ -15,36 +15,56 @@ np.random.seed(SEED)
 
 
 def create_fixed_sum_dist(df, fixed_sum, col_name):
-    num_non_zero = np.random.randint(1, fixed_sum + 1)
+    num_nodes = df.shape[0]
+    max_non_zero = min(fixed_sum, num_nodes)
+    num_non_zero = np.random.randint(1, max_non_zero + 1)
     breaks = sorted(
         np.random.choice(range(1, fixed_sum), num_non_zero - 1, replace=False)
     )
     parts = [a - b for a, b in zip(breaks + [fixed_sum], [0] + breaks)]
 
     df[col_name] = 0
-    indices = np.random.choice(df.shape[0], num_non_zero, replace=False)
+    indices = np.random.choice(num_nodes, num_non_zero, replace=False)
 
     df.loc[indices, col_name] = parts
 
-    return features_df
+    return df
 
 
 ###########################################################################################################
-# Dummy with same distribution
-
+# Dummy graph creation
 G = nx.DiGraph()
 G = nx.read_edgelist(
-    PATH + "network.csv",
+    PATH + "real_network.csv",
     delimiter=",",
     nodetype=int,
     data=(("weight", float),),
     create_using=nx.DiGraph(),
 )
 
-in_degree = list(d for _, d in G.in_degree())
-out_degree = list(d for _, d in G.out_degree())
+# following the distribution
+# in_degree = list(d for _, d in G.in_degree())
+# out_degree = list(d for _, d in G.out_degree())
 
-G_dist = nx.directed_configuration_model(in_degree, out_degree)
+# G_dist = nx.directed_configuration_model(in_degree, out_degree)
+##########################################################################
+# scale-free
+G_dist = nx.scale_free_graph(
+    G.number_of_nodes(),
+    alpha=0.7,
+    beta=0.25,
+    gamma=0.05,
+    delta_in=0.1,
+    delta_out=1.0,
+)
+
+dist_edges = G_dist.number_of_edges()
+og_edges = G.number_of_edges()
+if dist_edges > og_edges:
+    edges_to_remove = dist_edges - og_edges
+    edges_list = list(G_dist.edges())
+    edges_to_remove_list = random.sample(edges_list, edges_to_remove)
+    G_dist.remove_edges_from(edges_to_remove_list)
 
 G_dist = nx.DiGraph(G_dist)
 G_dist.remove_edges_from(nx.selfloop_edges(G_dist))
@@ -100,7 +120,7 @@ for n in tqdm(nodes, desc="Constructing Node Features"):
         label = edge_data["label"]
 
         label_counts[label] += 1
-        avg_time += time  # Assumption: time = avg of rts per label
+        avg_time += time  # Assumption: time = avg of rt times per label
         score += WEIGHTS[label] * MAX_RT_SCORE * np.exp(-ALPHA * time / 60)
 
     avg_time /= max(1, in_deg)
@@ -109,6 +129,7 @@ for n in tqdm(nodes, desc="Constructing Node Features"):
         "user_rt": in_deg,
         "user_time_rt": avg_time,
         "score": score,
+        "num_post": max(0, out_deg - in_deg),
     }
 
     for label in labels:
@@ -122,7 +143,7 @@ features_df = pd.DataFrame(features)
 # num_post and rt_total
 # Random distributions that ads up to # tweets and # edges
 
-features_df = create_fixed_sum_dist(features_df, tweet_df.shape[0], "num_post")
+# features_df = create_fixed_sum_dist(features_df, tweet_df.shape[0], "num_post")
 features_df = create_fixed_sum_dist(features_df, num_rt, "rt_total")
 #######################################################
 # num_post per label
@@ -146,7 +167,7 @@ for label in labels:
 # verification and saving
 print("----------------------------------------------------------------")
 print(f"num_post total: {features_df['num_post'].sum()}")
-print(f"num_post total: {features_df['rt_total'].sum()}")
+print(f"num_rt total: {features_df['rt_total'].sum()}")
 print("----------------------------------------------------------------")
 print("Score based on posts check:")
 print("----------------------------------------------------------------")

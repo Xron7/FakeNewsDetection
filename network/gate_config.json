@@ -1,10 +1,14 @@
 {
-    "hidden_dims":      [64, 32, 12],
-    "lambda_":          0,
-    "lr":               0.1,
-    "use_dummy":        false,
-    "epochs":           400,
+    "hidden_dims": [
+        64,
+        32,
+        12
+    ],
+    "lambda_": 0,
+    "lr": 0.1,
+    "use_dummy": false,
+    "epochs": 400,
     "remove_rt_thresh": 0,
-    "log":              true,
-    "scale":            "standard"
+    "log": true,
+    "scale": "standard"
 }
