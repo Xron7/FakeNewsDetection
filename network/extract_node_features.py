@@ -1,5 +1,5 @@
 ###
-# Creates the user/node features for use in the GAT
+# Creates the user/node features for use in the GNNs
 ###
 
 import pandas as pd
@@ -9,9 +9,6 @@ from tqdm import tqdm
 
 from utils import get_retweet_stats
 from config import PATH, MAX_RT_SCORE, ALPHA, WEIGHTS
-
-########################################################################################################################
-# for scoring users
 
 ########################################################################################################################
 # read datasets

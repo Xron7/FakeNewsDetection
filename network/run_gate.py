@@ -1,3 +1,10 @@
+"""
+Run GATE on the given dataset with the given configuration
+
+arg1: the dataset codename e.g. real
+arg2: the configuration file
+"""
+
 import sys
 import torch
 import pandas as pd

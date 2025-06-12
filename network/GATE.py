@@ -1,14 +1,15 @@
 import torch
-import torch.nn            as nn
+import torch.nn as nn
 
 from torch_geometric.utils import softmax
 
 from utils import calculate_feature_loss, calculate_structure_loss
 
+
 class GATEAttentionLayer(nn.Module):
     def __init__(self, in_dim, out_dim):
         super().__init__()
-        self.W  = nn.Linear(in_dim, out_dim, bias=False)
+        self.W = nn.Linear(in_dim, out_dim, bias=False)
         self.v0 = nn.Parameter(torch.Tensor(out_dim, 1))
         self.v1 = nn.Parameter(torch.Tensor(out_dim, 1))
         self.reset_parameters()
@@ -19,7 +20,7 @@ class GATEAttentionLayer(nn.Module):
         nn.init.xavier_uniform_(self.v1)
 
     def forward(self, x, edge_index):
-        h       = self.W(x)
+        h = self.W(x)
         alpha_0 = (h @ self.v0).squeeze(-1)
         alpha_1 = (h @ self.v1).squeeze(-1)
 
@@ -38,10 +39,12 @@ class GATEAttentionLayer(nn.Module):
 class GATEEncoder(nn.Module):
     def __init__(self, hidden_dims):
         super().__init__()
-        self.layers = nn.ModuleList([
-            GATEAttentionLayer(hidden_dims[i], hidden_dims[i+1])
-            for i in range(len(hidden_dims) - 1)
-        ])
+        self.layers = nn.ModuleList(
+            [
+                GATEAttentionLayer(hidden_dims[i], hidden_dims[i + 1])
+                for i in range(len(hidden_dims) - 1)
+            ]
+        )
 
     def forward(self, x, edge_index):
         self.attentions = []
@@ -56,9 +59,9 @@ class GATEDecoderLayer(nn.Module):
     def __init__(self, encoder_layer, in_dim, out_dim):
         super().__init__()
         self.encoder_layer = encoder_layer
-        self.W_T           = nn.Parameter(encoder_layer.W.weight)
-        self.in_dim        = in_dim
-        self.out_dim       = out_dim
+        self.W_T = nn.Parameter(encoder_layer.W.weight)
+        self.in_dim = in_dim
+        self.out_dim = out_dim
 
     def forward(self, h, edge_index, attn):
         h = h @ self.W_T
@@ -76,15 +79,21 @@ class GATEDecoder(nn.Module):
         super().__init__()
 
         self.encoder = encoder
-        self.layers  = nn.ModuleList([
-            GATEDecoderLayer(layer, encoder.layers[-1 - i].W.out_features, encoder.layers[-1 - i].W.in_features) 
-            for i, layer in enumerate(reversed(encoder.layers))
-        ])
+        self.layers = nn.ModuleList(
+            [
+                GATEDecoderLayer(
+                    layer,
+                    encoder.layers[-1 - i].W.out_features,
+                    encoder.layers[-1 - i].W.in_features,
+                )
+                for i, layer in enumerate(reversed(encoder.layers))
+            ]
+        )
 
     def forward(self, h, edge_index):
         for i, layer in enumerate(self.layers):
             attn = self.encoder.attentions[-1 - i]
-            h    = layer(h, edge_index, attn)
+            h = layer(h, edge_index, attn)
 
         return h
 
@@ -98,7 +107,7 @@ class GATEModel(nn.Module):
         self.decoder = GATEDecoder(self.encoder)
 
     def forward(self, x, edge_index, structure_pairs):
-        h       = self.encoder(x, edge_index)
+        h = self.encoder(x, edge_index)
         x_recon = self.decoder(h, edge_index)
 
         # Loss functions
