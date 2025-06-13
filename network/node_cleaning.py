@@ -6,6 +6,7 @@ arg2: the nodes to remove
 
 import sys
 import networkx as nx
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
 
@@ -39,9 +40,16 @@ G = nx.read_edgelist(
 
 with open(sys.argv[2], "r") as f:
     nodes_to_remove = [int(line.strip()) for line in f if line.strip()]
-nodes_to_remove = nodes_to_remove[:1000]  # limit to 1000 nodes for performance
+
 features_df = pd.read_csv(PATH + f"/{title}_node_features.csv")
-posters = features_df[features_df["num_post"] != 0]["user_id"].tolist()
+
+if title != "random":
+    posters = features_df[features_df["num_post"] != 0]["user_id"].tolist()
+else:
+    posters_num = np.ceil(0.003 * G.number_of_nodes())  # to ensure the ratio
+    posters = (
+        features_df["user_id"].sample(n=int(posters_num), random_state=42).tolist()
+    )
 
 # total retweets per label
 total_rts = count_retweets_per_label(G)
@@ -49,6 +57,7 @@ total_rts = count_retweets_per_label(G)
 ########################################################################################################################
 # Remove nodes and the nodes that depend on them
 num_nodes_og = G.number_of_nodes()
+print(f"Original number of nodes: {num_nodes_og}")
 G.remove_nodes_from(nodes_to_remove)
 
 nodes_removed = nodes_to_remove.copy()
