@@ -20,7 +20,6 @@ from utils import (
     remove_corr,
     evaluate_model,
     add_sentiment_scores,
-    score_users_binary,
     parse_config,
     get_important_features,
     perform_grid_search,
@@ -139,8 +138,3 @@ else:
     pipeline.fit(X_train, y_train)
 
 y_pred = evaluate_model(pipeline, X_test, y_test, mode=config["mode"])
-
-########################################################################################################################
-# scoring
-if config.get("score_users", False):
-    score_users_binary(pipeline, X_test, y_pred)
