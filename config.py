@@ -2,6 +2,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from catboost import CatBoostClassifier
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from xgboost import XGBClassifier
 
 PATH = "datasets/twitter1516/"
 THRESHOLDS = [0, 5, 30, 60, 180, 480, 720, 1440]
@@ -20,6 +21,7 @@ MODELS = {
     "logistic": LogisticRegression,
     "forest": RandomForestClassifier,
     "catboost": CatBoostClassifier,
+    "xgboost": XGBClassifier,
 }
 
 SCALERS = {"standard": StandardScaler, "minmax": MinMaxScaler}

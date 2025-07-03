@@ -11,3 +11,4 @@ catboost
 torch
 torch_geometric
 igraph
+xgboost
