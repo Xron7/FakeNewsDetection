@@ -1,5 +1,5 @@
 """
-Collections of util functions
+Collection of util functions
 """
 
 import pandas as pd
@@ -18,7 +18,6 @@ from sklearn.metrics import (
     classification_report,
 )
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
-from tqdm import tqdm
 
 from config import PATH
 
@@ -204,52 +203,6 @@ def get_retweet_stats(tweet_id):
     prop_df = prop_df[1:]  # to exclude the poster
 
     return prop_df[["retweeter_id", "time_elapsed"]]
-
-
-def score_users_binary(
-    X_test, y_pred, user_stats_file="user_stats.csv", max_rt_score=0.8, alpha=1
-):
-    flag = "tested"
-    score_col = "score"
-
-    print(
-        "-------------------------------------------------------------------------------------------------------------"
-    )
-    print("Scoring users of test set...")
-
-    y_pred = [-1 if val == 0 else val for val in y_pred]  # to smooth operations
-
-    user_stats_df = pd.read_csv(PATH + user_stats_file, index_col=0)
-
-    user_stats_df[score_col] = 0.0
-    user_stats_df[flag] = 0
-
-    for _, (x, y) in tqdm(enumerate(zip(X_test.iterrows(), y_pred))):
-        poster = x[1]["user_id"]
-        tweet_id = x[1]["tweet_id"]
-
-        user_stats_df.loc[poster, flag] = 1
-        user_stats_df.loc[poster, score_col] += y
-
-        # retweeter scoring
-        retweet_df = get_retweet_stats(tweet_id)
-        for _, rt in retweet_df.iterrows():
-            rter = rt["retweeter_id"]
-            t = rt["time_elapsed"]
-
-            user_stats_df.loc[int(rter), flag] = 1
-
-            value = max_rt_score * np.exp(-alpha * max(0, t) / 60)
-
-            user_stats_df.loc[int(rter), score_col] += (
-                y * value
-            )  # true increases, false decreases
-
-    score_df = user_stats_df[user_stats_df[flag] == 1].drop(columns="tested")
-
-    score_df.to_csv(PATH + "user_scores.csv")
-
-    return None
 
 
 def parse_config(json_file):
