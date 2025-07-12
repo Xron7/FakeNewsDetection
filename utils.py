@@ -9,9 +9,9 @@ import torch.nn as nn
 import matplotlib.pyplot as plt
 import json
 import torch
+import seaborn as sns
 
 from sklearn.metrics import (
-    accuracy_score,
     roc_auc_score,
     log_loss,
     confusion_matrix,
@@ -167,13 +167,33 @@ def evaluate_model(model, X_test, y_test, mode):
     y_pred = model.predict(X_test)
     y_proba = model.predict_proba(X_test)
 
-    print("Accuracy:", accuracy_score(y_test, y_pred))
     if mode == "binary":
         print("ROC-AUC:", roc_auc_score(y_test, y_proba[:, 1]))
 
     print("Log Loss:", log_loss(y_test, y_proba))
-    print("Confusion Matrix:\n", confusion_matrix(y_test, y_pred))
     print("\nClassification Report:\n", classification_report(y_test, y_pred))
+
+    # confusion matrix
+    labels = ["false", "non-rumor", "true", "unverified"]
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(
+        confusion_matrix(y_test, y_pred, normalize="true"),
+        annot=True,
+        fmt=".2f",
+        cmap="Blues",
+        cbar=True,
+        xticklabels=labels,
+        yticklabels=labels,
+    )
+
+    plt.xlabel("Predicted Label")
+    plt.ylabel("True Label")
+    plt.title("Confusion Matrix")
+    plt.tight_layout()
+
+    save_path = "plots/confusion_matrix.png"
+    plt.savefig(save_path, dpi=300)
+    print(f"Confusion matrix saved in '{save_path}'")
 
     return y_pred
 
