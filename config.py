@@ -5,6 +5,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from xgboost import XGBClassifier
 
 PATH = "datasets/twitter1516/"
+PLOTS_PATH = "plots/"
 THRESHOLDS = [0, 5, 30, 60, 180, 480, 720, 1440]
 EXCLUDE_COLUMNS = ["poster", "label"]
 

@@ -137,4 +137,26 @@ if doGridSearch:
 else:
     pipeline.fit(X_train, y_train)
 
-y_pred = evaluate_model(pipeline, X_test, y_test, mode=config["mode"])
+y_pred = evaluate_model(pipeline, X_test, y_test)
+
+########################################################################################################################
+# feature importance
+importances = pipeline.named_steps["model"].feature_importances_
+preprocessor = pipeline.named_steps["preprocessor"]
+count_vectorizer = preprocessor.named_transformers_["text"]
+
+numeric_features = X.columns.tolist()
+numeric_features.remove("tweet")
+numeric_features = [f"NUM_{col}" for col in numeric_features]
+
+text_features = count_vectorizer.get_feature_names_out()
+model_features = numerical_cols + list(text_features)
+
+imp_df = pd.DataFrame({"feature": model_features, "importance": importances})
+
+imp_df = imp_df.sort_values(by="importance", ascending=False).reset_index(drop=True)
+
+save_path = "models/feature_importances.csv"
+imp_df.to_csv(save_path, index=False)
+
+print(f"Feature importances saved to {save_path}")

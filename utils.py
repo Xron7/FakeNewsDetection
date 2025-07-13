@@ -12,14 +12,18 @@ import torch
 import seaborn as sns
 
 from sklearn.metrics import (
-    roc_auc_score,
+    auc,
     log_loss,
     confusion_matrix,
     classification_report,
+    roc_curve,
 )
+from sklearn.preprocessing import label_binarize
 from sklearn.model_selection import GridSearchCV, StratifiedKFold
+from xgboost import plot_importance
 
-from config import PATH
+
+from config import PATH, PLOTS_PATH
 
 
 def construct_prop_df(tweet_id, logging=True):
@@ -163,18 +167,21 @@ def perform_grid_search(pipeline, param_grid, X_train, y_train):
     return grid_search
 
 
-def evaluate_model(model, X_test, y_test, mode):
+def evaluate_model(model, X_test, y_test):
     y_pred = model.predict(X_test)
     y_proba = model.predict_proba(X_test)
-
-    if mode == "binary":
-        print("ROC-AUC:", roc_auc_score(y_test, y_proba[:, 1]))
 
     print("Log Loss:", log_loss(y_test, y_proba))
     print("\nClassification Report:\n", classification_report(y_test, y_pred))
 
-    # confusion matrix
     labels = ["false", "non-rumor", "true", "unverified"]
+    plot_confusion_matrix(y_test, y_pred, labels)
+    plot_roc_curve(y_test, y_proba, labels)
+
+    return y_pred
+
+
+def plot_confusion_matrix(y_test, y_pred, labels):
     plt.figure(figsize=(8, 6))
     sns.heatmap(
         confusion_matrix(y_test, y_pred, normalize="true"),
@@ -191,11 +198,38 @@ def evaluate_model(model, X_test, y_test, mode):
     plt.title("Confusion Matrix")
     plt.tight_layout()
 
-    save_path = "plots/confusion_matrix.png"
+    save_path = f"{PLOTS_PATH}confusion_matrix.png"
     plt.savefig(save_path, dpi=300)
     print(f"Confusion matrix saved in '{save_path}'")
 
-    return y_pred
+    return None
+
+
+def plot_roc_curve(y_test, y_proba, labels):
+    n_classes = len(labels)
+    y_test_binarized = label_binarize(y_test, classes=np.arange(n_classes))
+
+    plt.figure(figsize=(8, 6))
+
+    for i in range(n_classes):
+        fpr, tpr, _ = roc_curve(y_test_binarized[:, i], y_proba[:, i])
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, label=f"{labels[i]} (AUC = {roc_auc:.2f})")
+
+    plt.plot([0, 1], [0, 1], "k--", label="Random")
+
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curve (One-vs-Rest)")
+    plt.legend(loc="lower right")
+    plt.grid(True)
+    plt.tight_layout()
+
+    save_path = f"{PLOTS_PATH}roc.png"
+    plt.savefig(save_path, dpi=300)
+    print(f"Roc curves saved in '{save_path}'")
+
+    return None
 
 
 # call it to use it
@@ -245,9 +279,9 @@ def calculate_structure_loss(h, structure_pairs):
     return -torch.log(torch.sigmoid(dot_product) + 1e-8).sum()
 
 
-def plot_loss(losses, type, lambda_, lr, epochs, dims):
+def plot_loss(losses, type_, lambda_, lr, epochs, dims):
     plt.figure(figsize=(8, 5))
-    plt.plot(losses, label=f"{type} Loss", linewidth=2)
+    plt.plot(losses, label=f"{type_} Loss", linewidth=2)
     plt.xlabel("Epoch")
     plt.ylabel("Loss")
     plt.title("GATE Training Loss Curve")
@@ -257,7 +291,7 @@ def plot_loss(losses, type, lambda_, lr, epochs, dims):
     plt.legend()
     plt.grid(True)
 
-    plt.savefig(f"plots/{type}_{lambda_}_{lr}_{epochs}_{dims}.png", dpi=300)
+    plt.savefig(f"{PLOTS_PATH}{type_}_{lambda_}_{lr}_{epochs}_{dims}.png", dpi=300)
 
     return None
 
@@ -270,6 +304,6 @@ def plot_after_cleaning(data, title, metric):
     plt.title(f"{title}: {metric} vs # users removed")
     plt.grid(True)
 
-    plt.savefig(f"plots/{title}_{metric}.png", dpi=300)
+    plt.savefig(f"{PLOTS_PATH}{title}_{metric}.png", dpi=300)
 
     return None

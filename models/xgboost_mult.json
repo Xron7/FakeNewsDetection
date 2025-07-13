@@ -1,22 +1,25 @@
 {
-  "mode": "multiclass",
   "model": "xgboost",
-  "params": {
-  },
+  "params": {},
   "dataset": "dataset.csv",
   "log": false,
-  "combinations": [{
-    "name": "user_rtXid",
-    "c1": "user_rt",
-    "c2": "user_id",
-    "op": "mult"
-  },{
-    "name": "hashtags2rt",
-    "c1": "num_hashtags",
-    "c2": "num_rt",
-    "op": "div"
-  }],
-  "num_exclude": ["polarity"],
+  "combinations": [
+    {
+      "name": "user_rtXid",
+      "c1": "user_rt",
+      "c2": "user_id",
+      "op": "mult"
+    },
+    {
+      "name": "hashtags2rt",
+      "c1": "num_hashtags",
+      "c2": "num_rt",
+      "op": "div"
+    }
+  ],
+  "num_exclude": [
+    "polarity"
+  ],
   "count_matrix": true,
   "scaler": "standard",
   "remove_corr": true,
